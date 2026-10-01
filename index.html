@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Urban Outlaw RPG</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="hud">
+      <div class="topbar">
+        <div>
+          <h1>Urban Outlaw RPG</h1>
+        </div>
+        <div class="stats">
+          <div><span>Health</span><strong id="health">100</strong></div>
+          <div><span>Cash</span><strong id="cash">$150</strong></div>
+          <div><span>Rep</span><strong id="rep">0</strong></div>
+        </div>
+      </div>
+      <div id="objective">Objective: Explore the city and complete the first district missions.</div>
+      <div id="message">Move with WASD or Arrow Keys.</div>
+    </div>
+
+    <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+    <script src="script.js"></script>
+  </body>
+</html>
