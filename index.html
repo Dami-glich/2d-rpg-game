@@ -16,11 +16,29 @@
           <div><span>Health</span><strong id="health">100</strong></div>
           <div><span>Cash</span><strong id="cash">$150</strong></div>
           <div><span>Rep</span><strong id="rep">0</strong></div>
+          <div><span>Medkits</span><strong id="medkits">1</strong></div>
         </div>
       </div>
       <div id="objective">Objective: Explore the city and complete the first district missions.</div>
-      <div id="message">Move with WASD or Arrow Keys.</div>
+      <div id="message">Move with WASD or Arrow Keys. Press I for inventory and shop.</div>
     </div>
+
+    <aside id="inventoryPanel" class="hidden" aria-live="polite">
+      <div class="panel-header">
+        <h2>Inventory & Shop</h2>
+        <button id="closeInventory" type="button">X</button>
+      </div>
+
+      <div class="panel-section">
+        <h3>Inventory</h3>
+        <ul id="inventoryList"></ul>
+      </div>
+
+      <div class="panel-section">
+        <h3>Shop</h3>
+        <div id="shopList"></div>
+      </div>
+    </aside>
 
     <canvas id="gameCanvas" width="1280" height="720"></canvas>
 
