@@ -33,6 +33,8 @@ const player = {
   armor: 0,
   energy: 0,
   attackCooldown: 0,
+  activeJob: null,
+  jobProgress: {},
 };
 
 const questState = {
@@ -46,6 +48,114 @@ const zoneQuests = [
   { name: 'River', x: 1220, y: 260, w: 630, h: 330, reward: 70, rep: 8 },
   { name: 'Casino', x: 1050, y: 980, w: 760, h: 420, reward: 100, rep: 10 },
   { name: 'Admin Zone', x: 300, y: 930, w: 500, h: 420, reward: 120, rep: 12 },
+];
+
+// BEGINNER JOBS
+const beginnerJobs = [
+  {
+    id: 'delivery_boy',
+    name: 'Delivery Boy',
+    location: { x: 340, y: 120, building: 'Violet Apartments' },
+    mission: 'Deliver packages to the River District',
+    targetZone: { x: 1220, y: 260, w: 630, h: 330 },
+    payment: 30,
+    rep: 2,
+    requirements: 'Requires 0 rep',
+  },
+  {
+    id: 'shop_clerk',
+    name: 'Shop Clerk',
+    location: { x: 1250, y: 650, building: 'Riverfront Plaza' },
+    mission: 'Stock shelves and help customers',
+    targetZone: { x: 1180, y: 620, w: 300, h: 200 },
+    payment: 25,
+    rep: 1,
+    requirements: 'Requires 0 rep',
+  },
+  {
+    id: 'parking_attendant',
+    name: 'Parking Attendant',
+    location: { x: 1180, y: 110, building: 'North Garage' },
+    mission: 'Monitor and manage the North Garage parking lot',
+    targetZone: { x: 1100, y: 50, w: 300, h: 200 },
+    payment: 20,
+    rep: 1,
+    requirements: 'Requires 0 rep',
+  },
+  {
+    id: 'mail_carrier',
+    name: 'Mail Carrier',
+    location: { x: 690, y: 110, building: 'Harbor Dwellings' },
+    mission: 'Deliver mail throughout Harbor District',
+    targetZone: { x: 600, y: 80, w: 250, h: 200 },
+    payment: 28,
+    rep: 2,
+    requirements: 'Requires 0 rep',
+  },
+  {
+    id: 'janitor',
+    name: 'Janitor',
+    location: { x: 760, y: 1350, building: 'City Hall' },
+    mission: 'Clean and maintain City Hall',
+    targetZone: { x: 700, y: 1300, w: 350, h: 200 },
+    payment: 22,
+    rep: 1,
+    requirements: 'Requires 0 rep',
+  },
+];
+
+// REGULAR JOBS (Requires 5+ rep)
+const regularJobs = [
+  {
+    id: 'security_guard',
+    name: 'Security Guard',
+    location: { x: 1640, y: 620, building: 'Lucky Palace' },
+    mission: 'Patrol the casino and protect patrons',
+    targetZone: { x: 1580, y: 580, w: 350, h: 280 },
+    payment: 75,
+    rep: 8,
+    requirements: 'Requires 5+ rep',
+  },
+  {
+    id: 'courier',
+    name: 'Courier',
+    location: { x: 80, y: 110, building: 'Old House' },
+    mission: 'Fast delivery across the entire city',
+    targetZone: { x: 400, y: 400, w: 600, h: 600 },
+    payment: 65,
+    rep: 6,
+    requirements: 'Requires 5+ rep',
+  },
+  {
+    id: 'enforcer',
+    name: 'Enforcer',
+    location: { x: 1480, y: 1140, building: 'Snowline Casino' },
+    mission: 'Ensure debts are paid at the casino',
+    targetZone: { x: 1380, y: 1050, w: 300, h: 250 },
+    payment: 85,
+    rep: 10,
+    requirements: 'Requires 5+ rep',
+  },
+  {
+    id: 'bodyguard',
+    name: 'Bodyguard',
+    location: { x: 550, y: 260, building: 'Riverside NPC Station' },
+    mission: 'Protect a VIP traveling through the city',
+    targetZone: { x: 300, y: 200, w: 800, h: 500 },
+    payment: 70,
+    rep: 7,
+    requirements: 'Requires 5+ rep',
+  },
+  {
+    id: 'debt_collector',
+    name: 'Debt Collector',
+    location: { x: 190, y: 1360, building: 'City Admin' },
+    mission: 'Collect outstanding debts from citizens',
+    targetZone: { x: 100, y: 1300, w: 400, h: 250 },
+    payment: 80,
+    rep: 9,
+    requirements: 'Requires 5+ rep',
+  },
 ];
 
 const buildings = [
@@ -221,6 +331,56 @@ function useMedkit() {
   updateHud();
 }
 
+// JOB SYSTEM FUNCTIONS
+function acceptJob(jobId) {
+  const allJobs = [...beginnerJobs, ...regularJobs];
+  const job = allJobs.find((j) => j.id === jobId);
+  if (!job) return;
+
+  const requiredRep = job.requirements.includes('5+') ? 5 : 0;
+  if (player.rep < requiredRep) {
+    messageEl.textContent = `You need ${requiredRep} reputation for this job.`;
+    return;
+  }
+
+  player.activeJob = jobId;
+  player.jobProgress[jobId] = { started: true, completed: false };
+  messageEl.textContent = `Job accepted: ${job.name}. ${job.mission}`;
+  objectiveEl.textContent = `Job: ${job.name} - ${job.mission}`;
+}
+
+function completeJob(jobId) {
+  const allJobs = [...beginnerJobs, ...regularJobs];
+  const job = allJobs.find((j) => j.id === jobId);
+  if (!job || !player.jobProgress[jobId]) return;
+
+  player.cash += job.payment;
+  player.rep += job.rep;
+  player.jobProgress[jobId].completed = true;
+  player.activeJob = null;
+
+  messageEl.textContent = `Job completed: ${job.name}! You earned $${job.payment} and ${job.rep} rep.`;
+  objectiveEl.textContent = 'Objective: Accept a new job or explore the city.';
+}
+
+function updateJobProgress() {
+  if (!player.activeJob) return;
+
+  const allJobs = [...beginnerJobs, ...regularJobs];
+  const job = allJobs.find((j) => j.id === player.activeJob);
+  if (!job) return;
+
+  const inZone =
+    player.x > job.targetZone.x &&
+    player.x < job.targetZone.x + job.targetZone.w &&
+    player.y > job.targetZone.y &&
+    player.y < job.targetZone.y + job.targetZone.h;
+
+  if (inZone && !player.jobProgress[player.activeJob].completed) {
+    completeJob(player.activeJob);
+  }
+}
+
 function updatePlayer(dt) {
   if (!inventoryPanel.classList.contains('hidden')) {
     return;
@@ -331,14 +491,36 @@ function updateNPCInteraction() {
     }
   });
 
-  if (nearest) {
+  // Check job locations
+  const allJobs = [...beginnerJobs, ...regularJobs];
+  let nearestJob = null;
+  let nearestJobDistance = Infinity;
+
+  allJobs.forEach((job) => {
+    const dist = Math.hypot(player.x - job.location.x, player.y - job.location.y);
+    if (dist < 100 && dist < nearestJobDistance) {
+      nearestJob = job;
+      nearestJobDistance = dist;
+    }
+  });
+
+  if (nearestJob && (!nearest || nearestJobDistance < nearestDistance)) {
+    messageEl.textContent = `Press E near ${nearestJob.location.building} to ${player.activeJob === nearestJob.id ? 'continue' : 'accept'} job: ${nearestJob.name}.`;
+
+    if (keys['e'] && !keys.interactLock) {
+      keys.interactLock = true;
+      if (player.activeJob !== nearestJob.id) {
+        acceptJob(nearestJob.id);
+      }
+    }
+  } else if (nearest) {
     messageEl.textContent = `Press E to speak with ${nearest.name}.`;
 
     if (keys['e'] && !keys.interactLock) {
       keys.interactLock = true;
       player.cash += 25;
       player.rep += 2;
-      messageEl.textContent = `${nearest.name}: “The city is changing. Stay sharp.”`;
+      messageEl.textContent = `${nearest.name}: "The city is changing. Stay sharp."`;
     }
   } else if (!keys['e']) {
     keys.interactLock = false;
@@ -397,6 +579,7 @@ function update(dt) {
   updatePlayer(dt);
   updateZoneProgress();
   updateNPCInteraction();
+  updateJobProgress();
   updateEnemies(dt);
   updateHud();
 }
@@ -441,6 +624,18 @@ function drawBackground(cameraX, cameraY) {
     ctx.fillStyle = '#111827';
     ctx.font = '14px Arial';
     ctx.fillText(building.name, building.x + 10, building.y + 22);
+  });
+
+  // Draw job location markers
+  const allJobs = [...beginnerJobs, ...regularJobs];
+  allJobs.forEach((job) => {
+    ctx.fillStyle = player.activeJob === job.id ? '#00ff00' : '#ffeb3b';
+    ctx.beginPath();
+    ctx.arc(job.location.x, job.location.y, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.font = '10px Arial';
+    ctx.fillText(job.name.substring(0, 4), job.location.x - 12, job.location.y + 3);
   });
 
   cars.forEach((car) => {
@@ -516,7 +711,7 @@ function drawControls() {
   ctx.fillText('WASD / Arrows = move', canvas.width - 260, 66);
   ctx.fillText('F = strike / attack', canvas.width - 260, 88);
   ctx.fillText('H = medkit', canvas.width - 260, 110);
-  ctx.fillText('E = talk', canvas.width - 260, 132);
+  ctx.fillText('E = talk/job', canvas.width - 260, 132);
 }
 
 function render() {
