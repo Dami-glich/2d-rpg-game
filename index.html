@@ -20,7 +20,7 @@
         </div>
       </div>
       <div id="objective">Objective: Explore the city and complete the first district missions.</div>
-      <div id="message">Move with WASD or Arrow Keys. Press I for inventory, J for job board.</div>
+      <div id="message">Move with WASD or Arrow Keys. Press I for inventory, J for job board, K for factions.</div>
     </div>
 
     <aside id="inventoryPanel" class="hidden" aria-live="polite">
@@ -77,6 +77,14 @@
         <h3>Completed Jobs</h3>
         <div id="completedJobsList" class="completed-jobs-list"></div>
       </div>
+    </aside>
+
+    <aside id="factionPanel" class="hidden" aria-live="polite">
+      <div class="panel-header">
+        <h2>Faction Network</h2>
+        <button id="closeFactionPanel" type="button">X</button>
+      </div>
+      <div id="factionList" class="faction-list"></div>
     </aside>
 
     <canvas id="gameCanvas" width="1280" height="720"></canvas>
