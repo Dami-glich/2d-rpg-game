@@ -20,7 +20,7 @@
         </div>
       </div>
       <div id="objective">Objective: Explore the city and complete the first district missions.</div>
-      <div id="message">Move with WASD or Arrow Keys. Press I for inventory and shop.</div>
+      <div id="message">Move with WASD or Arrow Keys. Press I for inventory, J for job board.</div>
     </div>
 
     <aside id="inventoryPanel" class="hidden" aria-live="polite">
@@ -46,6 +46,36 @@
           <button id="loadGameBtn" class="secondary" type="button">Load</button>
         </div>
         <ul id="questLog"></ul>
+      </div>
+    </aside>
+
+    <aside id="jobBoardPanel" class="hidden" aria-live="polite">
+      <div class="panel-header">
+        <h2>Job Board</h2>
+        <button id="closeJobBoard" type="button">X</button>
+      </div>
+
+      <div class="panel-section">
+        <h3>Active Mission</h3>
+        <div id="activeMissionDisplay" class="active-mission">
+          <p id="noActiveMission">No active mission. Accept a job to start.</p>
+          <div id="activeMissionDetails" class="hidden">
+            <p><strong id="activeMissionName"></strong></p>
+            <p id="activeMissionDesc"></p>
+            <p id="activeMissionReward"></p>
+            <button id="abandonJobBtn" type="button" class="abandon-btn">Abandon Job</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Available Jobs</h3>
+        <div id="jobList" class="job-list"></div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Completed Jobs</h3>
+        <div id="completedJobsList" class="completed-jobs-list"></div>
       </div>
     </aside>
 
