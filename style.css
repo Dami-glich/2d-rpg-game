@@ -78,11 +78,13 @@ h1 {
   font-size: 0.9rem;
 }
 
-#inventoryPanel {
+#inventoryPanel,
+#jobBoardPanel,
+#factionPanel {
   position: absolute;
   top: 110px;
   right: 28px;
-  width: min(360px, calc(100vw - 32px));
+  width: min(420px, calc(100vw - 32px));
   background: rgba(15, 23, 42, 0.92);
   border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 16px;
@@ -90,9 +92,13 @@ h1 {
   padding: 16px;
   z-index: 20;
   color: #e2e8f0;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
-#inventoryPanel.hidden {
+#inventoryPanel.hidden,
+#jobBoardPanel.hidden,
+#factionPanel.hidden {
   display: none;
 }
 
@@ -101,6 +107,8 @@ h1 {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  padding-bottom: 12px;
 }
 
 .panel-header h2,
@@ -108,7 +116,9 @@ h1 {
   margin: 0;
 }
 
-#closeInventory {
+#closeInventory,
+#closeJobBoard,
+#closeFactionPanel {
   border: none;
   border-radius: 8px;
   background: #1e293b;
@@ -116,6 +126,13 @@ h1 {
   width: 34px;
   height: 34px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+#closeInventory:hover,
+#closeJobBoard:hover,
+#closeFactionPanel:hover {
+  background: #334155;
 }
 
 .panel-section {
@@ -156,6 +173,237 @@ h1 {
   font-weight: bold;
   padding: 7px 10px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.shop-item button:hover {
+  background: #fbbf24;
+}
+
+.active-mission {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 8px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.active-mission p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+#activeMissionDetails {
+  width: 100%;
+}
+
+#activeMissionDetails.hidden {
+  display: none;
+}
+
+#activeMissionDetails strong {
+  color: #60a5fa;
+}
+
+#activeMissionDetails p {
+  margin: 6px 0;
+}
+
+.abandon-btn {
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.abandon-btn:hover {
+  background: #dc2626;
+}
+
+.job-list,
+.completed-jobs-list,
+.faction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.job-card,
+.faction-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.2s;
+}
+
+.job-card:hover,
+.faction-card:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.job-card.active,
+.faction-card.active {
+  border-color: #60a5fa;
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.job-card-header,
+.faction-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
+}
+
+.job-card-title,
+.faction-card-name {
+  font-weight: bold;
+  color: #93c5fd;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.job-card-rep,
+.faction-card-rank {
+  background: rgba(96, 165, 250, 0.2);
+  color: #93c5fd;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.job-card-location,
+.faction-card-type {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin: 4px 0 0;
+}
+
+.job-card-mission {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 4px 0;
+  font-style: italic;
+}
+
+.job-card-reward {
+  font-size: 0.85rem;
+  color: #86efac;
+  margin: 4px 0 0;
+}
+
+.job-card-requirement {
+  font-size: 0.8rem;
+  color: #f87171;
+  margin-top: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.job-card-locked {
+  opacity: 0.6;
+}
+
+.accept-btn,
+.faction-select-btn {
+  border: none;
+  border-radius: 6px;
+  background: #10b981;
+  color: #fff;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.accept-btn:hover,
+.faction-select-btn:hover {
+  background: #059669;
+}
+
+.accept-btn:disabled,
+.faction-select-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+}
+
+.completed-job-entry {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.85rem;
+}
+
+.completed-job-entry strong {
+  color: #86efac;
+}
+
+.no-jobs-message {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.faction-scores {
+  display: flex;
+  justify-content: space-between;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  margin-top: 8px;
+}
+
+.faction-progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.faction-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #34d399, #60a5fa);
+}
+
+.faction-rank-jobs {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faction-rank-job {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+}
+
+.faction-rank-job strong {
+  display: block;
+  color: #f8fafc;
+  margin-bottom: 2px;
 }
 
 #gameCanvas {
@@ -163,18 +411,6 @@ h1 {
   width: 100vw;
   height: 100vh;
   background: #122033;
-}
-
-#controlsHint {
-  position: absolute;
-  right: 30px;
-  bottom: 20px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 10px;
-  padding: 8px 12px;
-  color: #e2e8f0;
-  z-index: 15;
 }
 
 @media (max-width: 700px) {
@@ -187,7 +423,9 @@ h1 {
     justify-content: flex-start;
   }
 
-  #inventoryPanel {
+  #inventoryPanel,
+  #jobBoardPanel,
+  #factionPanel {
     top: 150px;
     right: 10px;
     left: 10px;
