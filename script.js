@@ -41,14 +41,149 @@ const factionDefinitions = {
   'Black Vipers': { type: 'crime', color: '#ef4444', ranks: ['Prospect', 'Street Runner', 'Enforcer', 'Driver', 'Dealer', 'Specialist', 'Crew Leader', 'Senior Enforcer', 'Underboss', 'Boss'] },
   'Iron Wolves': { type: 'crime', color: '#f87171', ranks: ['Prospect', 'Street Runner', 'Enforcer', 'Driver', 'Dealer', 'Specialist', 'Crew Leader', 'Senior Enforcer', 'Underboss', 'Boss'] },
   'Crown Syndicate': { type: 'crime', color: '#f59e0b', ranks: ['Associate', 'Courier', 'Enforcer', 'Driver', 'Specialist', 'Security Officer', 'Crew Leader', 'Captain', 'Underboss', 'Boss'] },
-  'Metro Police Department': { type: 'police', color: '#3b82f6', ranks: ['Police Recruit', 'Police Officer', 'Senior Officer', 'Patrol Officer', 'Traffic Officer', 'Detective', 'Corporal', 'Sergeant', 'Lieutenant', 'Police Captain'] },
-  'City Highway Patrol': { type: 'police', color: '#60a5fa', ranks: ['Cadet', 'Patrol Officer', 'Traffic Officer', 'Highway Officer', 'Senior Patrol Officer', 'Motorcycle Officer', 'Corporal', 'Sergeant', 'Lieutenant', 'Highway Commander'] },
+  'Metro Police Department': { type: 'police', color: '#3b82f6', ranks: ['Police Recruit', 'Police Officer', 'Senior Officer', 'Patrol Officer', 'Traffic Officer', 'Detective', 'Corporal', 'Sergeant', 'Lieutenant', 'Captain'] },
+  'City Highway Patrol': { type: 'police', color: '#60a5fa', ranks: ['Cadet', 'Patrol Officer', 'Traffic Officer', 'Highway Officer', 'Senior Patrol Officer', 'Motorcycle Officer', 'Corporal', 'Sergeant', 'Lieutenant', 'Captain'] },
   'National Defense Force': { type: 'military', color: '#22c55e', ranks: ['Recruit', 'Private', 'Private First Class', 'Specialist', 'Corporal', 'Sergeant', 'Staff Sergeant', 'Lieutenant', 'Captain', 'Major'] },
-  'State Intelligence Service': { type: 'intelligence', color: '#a78bfa', ranks: ['Trainee', 'Intelligence Analyst', 'Field Agent', 'Surveillance Agent', 'Intelligence Officer', 'Senior Agent', 'Special Agent', 'Field Supervisor', 'Intelligence Director', 'SIS Director'] },
-  'Central City Medical Center': { type: 'medical', color: '#34d399', ranks: ['Medical Intern', 'Medical Assistant', 'Nurse', 'Paramedic', 'Senior Nurse', 'Doctor', 'Emergency Doctor', 'Surgeon', 'Medical Director', 'Hospital Director'] },
-  'Riverside General Hospital': { type: 'medical', color: '#2dd4bf', ranks: ['Medical Intern', 'Medical Assistant', 'Nurse', 'Paramedic', 'Senior Nurse', 'Doctor', 'Emergency Doctor', 'Surgeon', 'Medical Director', 'Hospital Director'] },
-  'Urban News Network': { type: 'news', color: '#fbbf24', ranks: ['News Intern', 'Camera Assistant', 'Reporter', 'News Photographer', 'Field Reporter', 'Investigative Journalist', 'Senior Reporter', 'News Producer', 'News Editor', 'Network Director'] },
-  'City Government Administration': { type: 'government', color: '#e2e8f0', ranks: ['Administrative Intern', 'Clerk', 'Administrative Assistant', 'Government Officer', 'Senior Officer', 'Department Officer', 'Department Manager', 'Deputy Director', 'Government Director', 'City Administrator'] },
+  'State Intelligence Service': { type: 'intelligence', color: '#a78bfa', ranks: ['Trainee', 'Intelligence Analyst', 'Field Agent', 'Surveillance Agent', 'Intelligence Officer', 'Senior Agent', 'Operations Lead', 'Deputy Director', 'Director', 'Chief Director'] },
+  'Central City Medical Center': { type: 'medical', color: '#34d399', ranks: ['Medical Intern', 'Medical Assistant', 'Nurse', 'Paramedic', 'Senior Nurse', 'Doctor', 'Emergency Doctor', 'Surgeon', 'Chief Surgeon', 'Medical Director'] },
+  'Riverside General Hospital': { type: 'medical', color: '#2dd4bf', ranks: ['Medical Intern', 'Medical Assistant', 'Nurse', 'Paramedic', 'Senior Nurse', 'Doctor', 'Emergency Doctor', 'Surgeon', 'Chief Surgeon', 'Medical Director'] },
+  'Urban News Network': { type: 'news', color: '#fbbf24', ranks: ['News Intern', 'Camera Assistant', 'Reporter', 'News Photographer', 'Field Reporter', 'Investigative Journalist', 'Senior Reporter', 'Producer', 'News Director', 'Editor-in-Chief'] },
+  'City Government Administration': { type: 'government', color: '#e2e8f0', ranks: ['Administrative Intern', 'Clerk', 'Administrative Assistant', 'Government Officer', 'Senior Officer', 'Department Analyst', 'Section Chief', 'Deputy Director', 'Director', 'Commissioner'] },
+};
+
+const stage2FactionJobs = {
+  'Black Vipers': [
+    { id: 'black_vipers_prospect', rankIndex: 0, rankName: 'Prospect', title: 'Street Hand-Off', description: 'Move contraband through the East Faction strip and make the first drop clean.', payment: 120, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_street_runner', rankIndex: 1, rankName: 'Street Runner', title: 'Courier Sweep', description: 'Run the alley routes and keep the crew supplied before dawn.', payment: 180, repReward: 18, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Boardwalk Check', description: 'Clear a rival crew from the river approach and collect the cut.', payment: 260, repReward: 25, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_driver', rankIndex: 3, rankName: 'Driver', title: 'Midnight Chase', description: 'Transport a timed cargo load through the city roads and lose the tails.', payment: 330, repReward: 30, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'black_vipers_dealer', rankIndex: 4, rankName: 'Dealer', title: 'Market Takeover', description: 'Secure a distribution point and settle the local street market.', payment: 400, repReward: 36, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_specialist', rankIndex: 5, rankName: 'Specialist', title: 'Signal Jam', description: 'Hack and disrupt a rival surveillance effort in the East Faction block.', payment: 510, repReward: 42, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
+    { id: 'black_vipers_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Warehouse Strike', description: 'Command the crew through a protection job and secure the warehouse haul.', payment: 620, repReward: 50, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_senior_enforcer', rankIndex: 7, rankName: 'Senior Enforcer', title: 'Two-Block Sweep', description: 'Crush resistance in two active sectors and leave a warning behind.', payment: 760, repReward: 58, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
+    { id: 'black_vipers_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Power Play', description: 'Take control of a rival route and collect the supplier debt.', payment: 900, repReward: 70, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_boss', rankIndex: 9, rankName: 'Boss', title: 'Citywide Dominance', description: 'Launch the final citywide push and lock the Viper empire in place.', payment: 1150, repReward: 90, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
+  ],
+  'Iron Wolves': [
+    { id: 'iron_wolves_prospect', rankIndex: 0, rankName: 'Prospect', title: 'Backstreet Relay', description: 'Escort a small shipment from the river edge to the safe zone.', payment: 130, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_street_runner', rankIndex: 1, rankName: 'Street Runner', title: 'Fence Run', description: 'Run a swift route to the market and secure the valuables before intercept.', payment: 190, repReward: 18, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Riot Control', description: 'Break up a rival push along the riverfront and recover the payment.', payment: 270, repReward: 25, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_driver', rankIndex: 3, rankName: 'Driver', title: 'Night Route', description: 'Deliver the load through every crossroad and keep it from being flagged.', payment: 340, repReward: 31, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'iron_wolves_dealer', rankIndex: 4, rankName: 'Dealer', title: 'Warehouse Exchange', description: 'Lock down a stock transfer and secure the payout from the dealer circle.', payment: 410, repReward: 37, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_specialist', rankIndex: 5, rankName: 'Specialist', title: 'Signal Breach', description: 'Plant false signals and jam the rival grid in the East Faction sectors.', payment: 520, repReward: 44, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
+    { id: 'iron_wolves_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Frontline Hold', description: 'Command a raid and hold the route until the crew clears the stock.', payment: 630, repReward: 52, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_senior_enforcer', rankIndex: 7, rankName: 'Senior Enforcer', title: 'Southside Pressure', description: 'Push through the South Gang edge and keep the rival block collapsed.', payment: 780, repReward: 60, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
+    { id: 'iron_wolves_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Route Lock', description: 'Take over high-value transit and route each drop to the iron chain.', payment: 930, repReward: 72, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_boss', rankIndex: 9, rankName: 'Boss', title: 'Final Dominion', description: 'Finish the citywide takeover and seal the Wolf coalition under one brand.', payment: 1180, repReward: 92, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+  ],
+  'Crown Syndicate': [
+    { id: 'crown_syndicate_associate', rankIndex: 0, rankName: 'Associate', title: 'Purse Run', description: 'Handle a quiet transfer through the river corridor and keep the ledger clean.', payment: 150, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_courier', rankIndex: 1, rankName: 'Courier', title: 'Glass Route', description: 'Deliver a priority package between syndicate fronts before sunset.', payment: 210, repReward: 18, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Harbor Pressure', description: 'Hold the harbor route against rival pressure and collect the recovered fees.', payment: 290, repReward: 26, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_driver', rankIndex: 3, rankName: 'Driver', title: 'Gold Runner', description: 'Move the cash convoy through mixed routes without losing the escort.', payment: 350, repReward: 32, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'crown_syndicate_specialist', rankIndex: 4, rankName: 'Specialist', title: 'Quiet Entry', description: 'Slip in with a false manifest and secure the premium stash before dawn.', payment: 430, repReward: 38, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_security_officer', rankIndex: 5, rankName: 'Security Officer', title: 'Vault Watch', description: 'Guard a high-value vault and stop the extraction attempt at the doors.', payment: 540, repReward: 45, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Prize Lift', description: 'Turn the collection team into a successful extraction and secure all payments.', payment: 660, repReward: 54, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_captain', rankIndex: 7, rankName: 'Captain', title: 'Crown Sweep', description: 'Sweep the city block, clear the suspects, and dominate the syndicate lane.', payment: 800, repReward: 62, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
+    { id: 'crown_syndicate_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Golden Contract', description: 'Seal a major contract and force the remaining fronts to comply.', payment: 960, repReward: 74, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_boss', rankIndex: 9, rankName: 'Boss', title: 'Empire Crown', description: 'Claim the city’s largest network and set the new Syndicate order in motion.', payment: 1200, repReward: 95, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+  ],
+  'Metro Police Department': [
+    { id: 'mpd_recruit', rankIndex: 0, rankName: 'Police Recruit', title: 'Beat Patrol', description: 'Complete a pattern patrol near city hall and confirm local safety checks.', payment: 140, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_police_officer', rankIndex: 1, rankName: 'Police Officer', title: 'Hot Spot Scan', description: 'Respond to suspicious activity near the central district and file a clean review.', payment: 200, repReward: 19, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_senior_officer', rankIndex: 2, rankName: 'Senior Officer', title: 'Evidence Run', description: 'Gather key evidence and secure the route during a rapid response.', payment: 280, repReward: 26, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_patrol_officer', rankIndex: 3, rankName: 'Patrol Officer', title: 'District Sweep', description: 'Cover the city blocks and keep the route stable for the department watch.', payment: 360, repReward: 33, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_traffic_officer', rankIndex: 4, rankName: 'Traffic Officer', title: 'Street Control', description: 'Regulate key intersections and keep movement safe during the evening rush.', payment: 440, repReward: 40, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+    { id: 'mpd_detective', rankIndex: 5, rankName: 'Detective', title: 'Case File Search', description: 'Trace the suspect pattern and collect intel before the next raid.', payment: 560, repReward: 48, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_corporal', rankIndex: 6, rankName: 'Corporal', title: 'Night Detail', description: 'Lead a squad through a sustained check of the admin district routes.', payment: 680, repReward: 56, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_sergeant', rankIndex: 7, rankName: 'Sergeant', title: 'Unit Response', description: 'Coordinate a high-pressure response against organized activity in the city core.', payment: 820, repReward: 64, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'mpd_lieutenant', rankIndex: 8, rankName: 'Lieutenant', title: 'Operations Sweep', description: 'Run an organized enforcement action and secure the department’s district control.', payment: 980, repReward: 76, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_captain', rankIndex: 9, rankName: 'Captain', title: 'City Lockdown', description: 'Lead the final citywide response and stabilize the capital district.', payment: 1220, repReward: 97, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+  ],
+  'City Highway Patrol': [
+    { id: 'chp_cadet', rankIndex: 0, rankName: 'Cadet', title: 'Highway Check', description: 'Inspect road access and verify patrol markers along the east corridor.', payment: 135, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_patrol_officer', rankIndex: 1, rankName: 'Patrol Officer', title: 'Access Patrol', description: 'Monitor road traffic and flag any suspicious vehicle stops.', payment: 205, repReward: 19, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_traffic_officer', rankIndex: 2, rankName: 'Traffic Officer', title: 'Lane Control', description: 'Secure the key interchange and coordinate safe movement through the route.', payment: 285, repReward: 27, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1100, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_highway_officer', rankIndex: 3, rankName: 'Highway Officer', title: 'Roadside Escort', description: 'Escort a security convoy and clear each road section to a safe checkpoint.', payment: 365, repReward: 34, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'chp_senior_patrol_officer', rankIndex: 4, rankName: 'Senior Patrol Officer', title: 'Interchange Watch', description: 'Establish a direct road watch and keep the crossroads open for emergency traffic.', payment: 450, repReward: 41, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_motorcycle_officer', rankIndex: 5, rankName: 'Motorcycle Officer', title: 'Rapid Response', description: 'Cover a fast-moving pursuit and maintain road control during the chase.', payment: 570, repReward: 49, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1100, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_corporal', rankIndex: 6, rankName: 'Corporal', title: 'Blocker Detail', description: 'Lead the roadblock team and keep illegal traffic from passing the perimeter.', payment: 690, repReward: 57, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_sergeant', rankIndex: 7, rankName: 'Sergeant', title: 'Highway Raid', description: 'Coordinate the highway assault on a blocked route and secure the corridor.', payment: 835, repReward: 66, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1100, y: 0, w: 120, h: 1600 } },
+    { id: 'chp_lieutenant', rankIndex: 8, rankName: 'Lieutenant', title: 'Transport Shield', description: 'Secure the transport lanes and keep the highway network protected during the night cycle.', payment: 995, repReward: 78, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'chp_captain', rankIndex: 9, rankName: 'Captain', title: 'Regional Defense', description: 'Direct the final road defense plan and lock down the city’s access routes.', payment: 1240, repReward: 98, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+  ],
+  'National Defense Force': [
+    { id: 'ndf_recruit', rankIndex: 0, rankName: 'Recruit', title: 'Perimeter Walk', description: 'Inspect the outer edge and confirm the defense line is active and stable.', payment: 155, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'ndf_private', rankIndex: 1, rankName: 'Private', title: 'Field Sweep', description: 'Scan the river block and verify no unauthorized movement crosses the defense line.', payment: 215, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'ndf_private_first_class', rankIndex: 2, rankName: 'Private First Class', title: 'Signal Watch', description: 'Hold an observation point and relay critical intel across the east pass.', payment: 295, repReward: 27, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
+    { id: 'ndf_specialist', rankIndex: 3, rankName: 'Specialist', title: 'Battery Relay', description: 'Maintain the power relay route and secure all equipment needed for the patrol line.', payment: 380, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'ndf_corporal', rankIndex: 4, rankName: 'Corporal', title: 'Line Breach', description: 'Repel staged incursions and hold the main defense path under the command structure.', payment: 470, repReward: 42, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'ndf_sergeant', rankIndex: 5, rankName: 'Sergeant', title: 'Forward Watch', description: 'Lead the forward team across a critical area and establish a durable tactical position.', payment: 590, repReward: 50, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'ndf_staff_sergeant', rankIndex: 6, rankName: 'Staff Sergeant', title: 'Outpost Defense', description: 'Fortify the outpost and direct the team through hostile movement near the river edge.', payment: 710, repReward: 58, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'ndf_lieutenant', rankIndex: 7, rankName: 'Lieutenant', title: 'Tactical Sweep', description: 'Coordinate a tactical sweep through multiple sectors and secure each checkpoint.', payment: 860, repReward: 67, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'ndf_captain', rankIndex: 8, rankName: 'Captain', title: 'Fortress Hold', description: 'Command the fortress line and prevent hostile penetration of the central command route.', payment: 1010, repReward: 80, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'ndf_major', rankIndex: 9, rankName: 'Major', title: 'Final Security Mandate', description: 'Execute the final strategic defense plan and secure the city’s military perimeter.', payment: 1265, repReward: 100, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+  ],
+  'State Intelligence Service': [
+    { id: 'sis_trainee', rankIndex: 0, rankName: 'Trainee', title: 'Background Scan', description: 'Review the city routes and map out suspicious patterns for the observer net.', payment: 160, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'sis_intelligence_analyst', rankIndex: 1, rankName: 'Intelligence Analyst', title: 'Pattern Review', description: 'Analyze traffic and communications data before the next action window.', payment: 220, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'sis_field_agent', rankIndex: 2, rankName: 'Field Agent', title: 'Shadow Run', description: 'Track movement in the river corridor and gather intel on the active cell.', payment: 300, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'sis_surveillance_agent', rankIndex: 3, rankName: 'Surveillance Agent', title: 'Watch Grid', description: 'Observe key intersections and build a clean picture of the activity pattern.', payment: 390, repReward: 36, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
+    { id: 'sis_intelligence_officer', rankIndex: 4, rankName: 'Intelligence Officer', title: 'Intercept Brief', description: 'Intercept the key transmission and collect the data before it reaches the crowd.', payment: 480, repReward: 44, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'sis_senior_agent', rankIndex: 5, rankName: 'Senior Agent', title: 'Dossier Pull', description: 'Recover the briefcase and confirm the target’s scheduled movement pattern.', payment: 600, repReward: 52, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'sis_operations_lead', rankIndex: 6, rankName: 'Operations Lead', title: 'Counter Sweep', description: 'Direct the team against a compromised operation and secure the evidence trail.', payment: 720, repReward: 60, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'sis_deputy_director', rankIndex: 7, rankName: 'Deputy Director', title: 'Priority Signal', description: 'Execute a high-risk surveillance lift and secure the citywide communications ledger.', payment: 880, repReward: 69, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'sis_director', rankIndex: 8, rankName: 'Director', title: 'Blackout Run', description: 'Run the blackout operation and lock down the covert channels before the leak spreads.', payment: 1040, repReward: 82, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'sis_chief_director', rankIndex: 9, rankName: 'Chief Director', title: 'Statewide Control', description: 'Command the final intelligence operation and bring all active fronts under monitoring.', payment: 1300, repReward: 102, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+  ],
+  'Central City Medical Center': [
+    { id: 'ccmc_medical_intern', rankIndex: 0, rankName: 'Medical Intern', title: 'Supply Run', description: 'Carry supplies to emergency teams and keep the first-aid cycle moving.', payment: 145, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_medical_assistant', rankIndex: 1, rankName: 'Medical Assistant', title: 'Ward Support', description: 'Assist the staff and move patients through the central care wing.', payment: 210, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_nurse', rankIndex: 2, rankName: 'Nurse', title: 'Rapid Triage', description: 'Stabilize incoming patients and carry them into treatment before the queue breaks.', payment: 290, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_paramedic', rankIndex: 3, rankName: 'Paramedic', title: 'Street Response', description: 'Move through the active city streets and keep emergency response ready at every block.', payment: 370, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'ccmc_senior_nurse', rankIndex: 4, rankName: 'Senior Nurse', title: 'Recovery Cycle', description: 'Coordinate the ward recovery process and improve patient throughput.', payment: 455, repReward: 42, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_doctor', rankIndex: 5, rankName: 'Doctor', title: 'Trauma Case', description: 'Direct treatment for a severe trauma case and keep the emergency wing stable.', payment: 575, repReward: 50, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_emergency_doctor', rankIndex: 6, rankName: 'Emergency Doctor', title: 'Priority Surge', description: 'Handle a high-volume emergency surge and stabilize the treatment floor.', payment: 700, repReward: 58, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_surgeon', rankIndex: 7, rankName: 'Surgeon', title: 'Operating Rush', description: 'Lead the surgical response during a critical emergency and protect the team route.', payment: 850, repReward: 67, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_chief_surgeon', rankIndex: 8, rankName: 'Chief Surgeon', title: 'Citywide Trauma', description: 'Coordinate the medical response and stabilize the city during the emergency surge.', payment: 1015, repReward: 80, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'ccmc_medical_director', rankIndex: 9, rankName: 'Medical Director', title: 'Recovery Command', description: 'Direct the final emergency care network and restore city health services.', payment: 1285, repReward: 102, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+  ],
+  'Riverside General Hospital': [
+    { id: 'rgh_medical_intern', rankIndex: 0, rankName: 'Medical Intern', title: 'Supply Cart', description: 'Carry emergency stock and maintain the flow across the hospital wing.', payment: 148, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_medical_assistant', rankIndex: 1, rankName: 'Medical Assistant', title: 'Patient Check', description: 'Conduct patient intake and verify stabilization before the next transfer.', payment: 215, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_nurse', rankIndex: 2, rankName: 'Nurse', title: 'Acute Triage', description: 'Handle urgent patients and return the ward to a stable care pattern.', payment: 295, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_paramedic', rankIndex: 3, rankName: 'Paramedic', title: 'Street Lift', description: 'Recover patients from the city streets and move them into full treatment.', payment: 375, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
+    { id: 'rgh_senior_nurse', rankIndex: 4, rankName: 'Senior Nurse', title: 'Recovery Shift', description: 'Coordinate the high-demand recovery shift and keep the care floor stable.', payment: 460, repReward: 43, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_doctor', rankIndex: 5, rankName: 'Doctor', title: 'Intensive Care', description: 'Keep a critical patient stable while the full treatment team prepares the room.', payment: 580, repReward: 51, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_emergency_doctor', rankIndex: 6, rankName: 'Emergency Doctor', title: 'Night Surge', description: 'Handle a sudden emergency rush and maintain the treatment line across all units.', payment: 710, repReward: 59, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_surgeon', rankIndex: 7, rankName: 'Surgeon', title: 'Critical Response', description: 'Lead a surgical intervention and protect the emergency process during the crisis.', payment: 860, repReward: 68, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_chief_surgeon', rankIndex: 8, rankName: 'Chief Surgeon', title: 'Regional Recovery', description: 'Command the regional medical chain and coordinate all treatment priorities.', payment: 1030, repReward: 81, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+    { id: 'rgh_medical_director', rankIndex: 9, rankName: 'Medical Director', title: 'Care Network', description: 'Lead the final city recovery plan and keep the hospital system fully operational.', payment: 1295, repReward: 103, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
+  ],
+  'Urban News Network': [
+    { id: 'unn_news_intern', rankIndex: 0, rankName: 'News Intern', title: 'Street Notes', description: 'Collect local updates and assemble the first list of city changes.', payment: 150, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'unn_camera_assistant', rankIndex: 1, rankName: 'Camera Assistant', title: 'Field Footage', description: 'Capture footage from the active city route and prepare the raw segment.', payment: 220, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'unn_reporter', rankIndex: 2, rankName: 'Reporter', title: 'City Beat', description: 'Cover the main city developments and confirm which events matter most.', payment: 300, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'unn_news_photographer', rankIndex: 3, rankName: 'News Photographer', title: 'Photowall', description: 'Document the route, collect candid images, and secure the story line.', payment: 390, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'unn_field_reporter', rankIndex: 4, rankName: 'Field Reporter', title: 'Live Interview', description: 'Get key voices on the record and build the broader city story.', payment: 480, repReward: 43, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'unn_investigative_journalist', rankIndex: 5, rankName: 'Investigative Journalist', title: 'Leak Review', description: 'Trace the source of a city leak and verify the official narrative.', payment: 605, repReward: 52, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'unn_senior_reporter', rankIndex: 6, rankName: 'Senior Reporter', title: 'Headlines', description: 'Assemble the headline story and coordinate the crew around the big reveal.', payment: 725, repReward: 60, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'unn_producer', rankIndex: 7, rankName: 'Producer', title: 'Broadcast Control', description: 'Oversee the segment timeline and keep the broadcast ready for release.', payment: 885, repReward: 69, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'unn_news_director', rankIndex: 8, rankName: 'News Director', title: 'Prime Time Push', description: 'Set the final coverage plan and lock in the top stories for the city feed.', payment: 1055, repReward: 82, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'unn_editor_in_chief', rankIndex: 9, rankName: 'Editor-in-Chief', title: 'Front Page Rush', description: 'Write the final chapter and deliver the city’s defining narrative to the public.', payment: 1320, repReward: 104, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+  ],
+  'City Government Administration': [
+    { id: 'cga_administrative_intern', rankIndex: 0, rankName: 'Administrative Intern', title: 'Files Check', description: 'Organize the records and confirm the administrative route is active for the office.', payment: 155, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_clerk', rankIndex: 1, rankName: 'Clerk', title: 'Routing Review', description: 'Verify the form chain and keep the public service office moving on time.', payment: 225, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_administrative_assistant', rankIndex: 2, rankName: 'Administrative Assistant', title: 'Office Flow', description: 'Support staff across the city administration flow and keep the service queue stable.', payment: 305, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_government_officer', rankIndex: 3, rankName: 'Government Officer', title: 'Public Check', description: 'Handle the compliance route and secure the next review cycle for the district.', payment: 395, repReward: 36, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_senior_officer', rankIndex: 4, rankName: 'Senior Officer', title: 'Program Review', description: 'Coordinate a city initiative review and confirm the route remains on schedule.', payment: 490, repReward: 44, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_department_analyst', rankIndex: 5, rankName: 'Department Analyst', title: 'Briefing Cycle', description: 'Collect datasets and prepare the official policy briefing for the administrative block.', payment: 610, repReward: 53, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_section_chief', rankIndex: 6, rankName: 'Section Chief', title: 'Service Seal', description: 'Lead the section and secure the service order against disruption in the district.', payment: 735, repReward: 61, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_deputy_director', rankIndex: 7, rankName: 'Deputy Director', title: 'Strategy Route', description: 'Execute the department plan and direct all operations toward city stability.', payment: 890, repReward: 70, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_director', rankIndex: 8, rankName: 'Director', title: 'City Briefing', description: 'Lead the final briefing and reframe the city administration priorities for the people.', payment: 1060, repReward: 83, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'cga_commissioner', rankIndex: 9, rankName: 'Commissioner', title: 'Final Order', description: 'Start the final administration order and lock the public network into place for the city.', payment: 1335, repReward: 105, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+  ],
 };
 
 const player = {
@@ -69,6 +204,8 @@ const player = {
   activeFaction: null,
   factionSwitchCooldown: 0,
   factions: {},
+  factionMissionProgress: {},
+  activeFactionMission: null,
 };
 
 Object.keys(factionDefinitions).forEach((factionName) => {
@@ -79,6 +216,7 @@ Object.keys(factionDefinitions).forEach((factionName) => {
     active: false,
     jobsCompleted: 0,
   };
+  player.factionMissionProgress[factionName] = {};
 });
 
 const questState = {
@@ -330,6 +468,16 @@ function getFactionInfo(factionName) {
   };
 }
 
+function getAllFactionJobs() {
+  return Object.entries(stage2FactionJobs).flatMap(([factionName, missions]) =>
+    missions.map((mission) => ({ ...mission, factionName }))
+  );
+}
+
+function getFactionJobsForFaction(factionName) {
+  return (stage2FactionJobs[factionName] || []).map((mission) => ({ ...mission, factionName }));
+}
+
 function refreshInventoryUI() {
   const items = [
     { label: 'Medkits', value: player.medkits },
@@ -529,6 +677,39 @@ function renderFactionPanel() {
           (factionDefinitions[player.activeFaction].type === 'police' && faction.type === 'crime')
         );
 
+      const missionCards = getFactionJobsForFaction(factionName)
+        .map((mission) => {
+          const missionProgress = player.factionMissionProgress[factionName]?.[mission.id] || {};
+          const isMissionCompleted = !!missionProgress.completed;
+          const isMissionUnlocked = state.rep >= mission.requiredFactionRep;
+          const isMissionActive = player.activeFactionMission && player.activeFactionMission.factionName === factionName && player.activeFactionMission.missionId === mission.id;
+
+          return `
+            <div class="faction-mission-card ${isMissionActive ? 'active' : ''} ${isMissionCompleted ? 'completed' : ''}">
+              <div class="faction-mission-header">
+                <strong>${mission.rankName}</strong>
+                <span>${mission.title}</span>
+              </div>
+              <p>${mission.description}</p>
+              <div class="faction-mission-meta">
+                <span>Pay: $${mission.payment}</span>
+                <span>Rep: +${mission.repReward}</span>
+                <span>Unlock: ${mission.requiredFactionRep}</span>
+              </div>
+              <button
+                type="button"
+                class="faction-mission-btn"
+                data-faction-name="${factionName}"
+                data-faction-mission-id="${mission.id}"
+                ${!isMissionUnlocked || isMissionCompleted || isMissionActive ? 'disabled' : ''}
+              >
+                ${isMissionCompleted ? 'Cleared' : isMissionActive ? 'Active' : 'Start'}
+              </button>
+            </div>
+          `;
+        })
+        .join('');
+
       return `
         <div class="faction-card ${isActive ? 'active' : ''}">
           <div class="faction-card-header">
@@ -544,6 +725,9 @@ function renderFactionPanel() {
           </div>
           <div class="faction-progress-bar">
             <div class="faction-progress-fill" style="width: ${(state.rep / 1600) * 100}%"></div>
+          </div>
+          <div class="faction-mission-list">
+            ${missionCards}
           </div>
           <button class="faction-select-btn" data-faction-name="${factionName}" ${isLocked ? 'disabled' : ''}>
             ${isActive ? 'Active Faction' : isLocked ? 'Cooldown Active' : 'Set Active'}
@@ -586,6 +770,60 @@ function setActiveFaction(factionName) {
   renderFactionPanel();
 }
 
+function startFactionMission(factionName, missionId) {
+  const factionMissions = stage2FactionJobs[factionName] || [];
+  const mission = factionMissions.find((entry) => entry.id === missionId);
+  if (!mission) return;
+
+  const factionState = player.factions[factionName];
+  if (!factionState) return;
+
+  if (factionState.rep < mission.requiredFactionRep) {
+    messageEl.textContent = `You need ${mission.requiredFactionRep} faction rep in ${factionName} to start ${mission.title}.`;
+    return;
+  }
+
+  player.activeFaction = factionName;
+  player.activeFactionMission = { factionName, missionId };
+  player.factionMissionProgress[factionName][missionId] = {
+    started: true,
+    completed: false,
+  };
+
+  objectiveEl.textContent = `Faction Mission: ${factionName} - ${mission.title}`;
+  messageEl.textContent = `${factionName}: ${mission.title} is active. Reach the target zone to complete it.`;
+  renderFactionPanel();
+}
+
+function completeFactionMission(factionName, missionId) {
+  const factionMissions = stage2FactionJobs[factionName] || [];
+  const mission = factionMissions.find((entry) => entry.id === missionId);
+  if (!mission) return;
+
+  if (!player.factionMissionProgress[factionName]) {
+    player.factionMissionProgress[factionName] = {};
+  }
+
+  player.factionMissionProgress[factionName][missionId] = {
+    started: true,
+    completed: true,
+  };
+
+  player.cash += mission.payment;
+  player.factions[factionName].rep += mission.repReward;
+  player.activeFactionMission = null;
+
+  if (player.activeFaction === factionName) {
+    objectiveEl.textContent = `Faction Mission Complete: ${factionName} - ${mission.title}`;
+  } else {
+    objectiveEl.textContent = 'Objective: Accept a new job or explore the city.';
+  }
+
+  messageEl.textContent = `${factionName}: ${mission.title} complete. Earned $${mission.payment} and +${mission.repReward} faction rep.`;
+  updateFactionRankState();
+  renderFactionPanel();
+}
+
 function updateFactionRankState() {
   Object.keys(factionDefinitions).forEach((factionName) => {
     const info = getFactionInfo(factionName);
@@ -599,6 +837,28 @@ function updateFactionRankState() {
     state.rankIndex = Math.min(nextIndex, factionDefinitions[factionName].ranks.length - 1);
     state.rank = factionDefinitions[factionName].ranks[state.rankIndex];
   });
+}
+
+function updateFactionMissionProgress() {
+  if (!player.activeFactionMission) return;
+
+  const { factionName, missionId } = player.activeFactionMission;
+  const mission = (stage2FactionJobs[factionName] || []).find((entry) => entry.id === missionId);
+  if (!mission) {
+    player.activeFactionMission = null;
+    return;
+  }
+
+  const zone = mission.targetZone;
+  const inZone =
+    player.x > zone.x &&
+    player.x < zone.x + zone.w &&
+    player.y > zone.y &&
+    player.y < zone.y + zone.h;
+
+  if (inZone) {
+    completeFactionMission(factionName, missionId);
+  }
 }
 
 function updateJobProgress() {
@@ -817,6 +1077,7 @@ function update(dt) {
   updateZoneProgress();
   updateNPCInteraction();
   updateJobProgress();
+  updateFactionMissionProgress();
   updateFactionRankState();
   updateEnemies(dt);
   updateHud();
@@ -1016,6 +1277,12 @@ jobListEl.addEventListener('click', (event) => {
 });
 
 factionListEl.addEventListener('click', (event) => {
+  const missionButton = event.target.closest('[data-faction-mission-id]');
+  if (missionButton) {
+    startFactionMission(missionButton.dataset.factionName, missionButton.dataset.factionMissionId);
+    return;
+  }
+
   const button = event.target.closest('[data-faction-name]');
   if (!button) return;
   setActiveFaction(button.dataset.factionName);
