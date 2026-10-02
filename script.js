@@ -25,9 +25,14 @@ const abandonJobBtn = document.getElementById('abandonJobBtn');
 const factionPanel = document.getElementById('factionPanel');
 const closeFactionButton = document.getElementById('closeFactionPanel');
 const factionListEl = document.getElementById('factionList');
+const joystickBase = document.getElementById('joystickBase');
+const joystickThumb = document.getElementById('joystickThumb');
+const controlButtons = [...document.querySelectorAll('[data-control]')];
 
 const world = { width: 2200, height: 1600 };
 const keys = {};
+const touchInput = { x: 0, y: 0, active: false };
+const joystickState = { active: false, pointerId: null, radius: 48 };
 
 const shopItems = [
   { id: 'medkit', label: 'Medkit', cost: 25, effect: 'medkit' },
@@ -53,136 +58,52 @@ const factionDefinitions = {
 
 const stage2FactionJobs = {
   'Black Vipers': [
-    { id: 'black_vipers_prospect', rankIndex: 0, rankName: 'Prospect', title: 'Street Hand-Off', description: 'Move contraband through the East Faction strip and make the first drop clean.', payment: 120, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'black_vipers_street_runner', rankIndex: 1, rankName: 'Street Runner', title: 'Courier Sweep', description: 'Run the alley routes and keep the crew supplied before dawn.', payment: 180, repReward: 18, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'black_vipers_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Boardwalk Check', description: 'Clear a rival crew from the river approach and collect the cut.', payment: 260, repReward: 25, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'black_vipers_driver', rankIndex: 3, rankName: 'Driver', title: 'Midnight Chase', description: 'Transport a timed cargo load through the city roads and lose the tails.', payment: 330, repReward: 30, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'black_vipers_dealer', rankIndex: 4, rankName: 'Dealer', title: 'Market Takeover', description: 'Secure a distribution point and settle the local street market.', payment: 400, repReward: 36, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'black_vipers_specialist', rankIndex: 5, rankName: 'Specialist', title: 'Signal Jam', description: 'Hack and disrupt a rival surveillance effort in the East Faction block.', payment: 510, repReward: 42, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
-    { id: 'black_vipers_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Warehouse Strike', description: 'Command the crew through a protection job and secure the warehouse haul.', payment: 620, repReward: 50, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'black_vipers_senior_enforcer', rankIndex: 7, rankName: 'Senior Enforcer', title: 'Two-Block Sweep', description: 'Crush resistance in two active sectors and leave a warning behind.', payment: 760, repReward: 58, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
-    { id: 'black_vipers_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Power Play', description: 'Take control of a rival route and collect the supplier debt.', payment: 900, repReward: 70, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'black_vipers_boss', rankIndex: 9, rankName: 'Boss', title: 'Citywide Dominance', description: 'Launch the final citywide push and lock the Viper empire in place.', payment: 1150, repReward: 90, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
+    { id: 'black_vipers_prospect', rankIndex: 0, rankName: 'Prospect', title: 'Street Hand-Off', description: 'Move contraband through the East Faction strip and make the first drop clean.', payment: 140, repReward: 12, requiredFactionRep: 0, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_street_runner', rankIndex: 1, rankName: 'Street Runner', title: 'Courier Sweep', description: 'Run the alley routes and keep the crew supplied before dawn.', payment: 180, repReward: 15, requiredFactionRep: 40, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Boardwalk Check', description: 'Clear a rival crew from the river approach and collect the cut.', payment: 260, repReward: 18, requiredFactionRep: 80, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_driver', rankIndex: 3, rankName: 'Driver', title: 'Midnight Chase', description: 'Transport a timed cargo load through the city roads and lose the tails.', payment: 330, repReward: 20, requiredFactionRep: 130, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_dealer', rankIndex: 4, rankName: 'Dealer', title: 'Market Takeover', description: 'Secure a distribution point and settle the local street market.', payment: 400, repReward: 24, requiredFactionRep: 200, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_specialist', rankIndex: 5, rankName: 'Specialist', title: 'Signal Jam', description: 'Hack and disrupt a rival surveillance effort in the East Faction block.', payment: 510, repReward: 30, requiredFactionRep: 280, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Warehouse Strike', description: 'Command the crew through a protection job and secure the warehouse haul.', payment: 630, repReward: 38, requiredFactionRep: 380, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_senior_enforcer', rankIndex: 7, rankName: 'Senior Enforcer', title: 'Two-Block Sweep', description: 'Crush resistance in two active sectors and leave a warning behind.', payment: 760, repReward: 42, requiredFactionRep: 500, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'black_vipers_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Power Play', description: 'Take control of a rival route and collect the supplier debt.', payment: 900, repReward: 52, requiredFactionRep: 700, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'black_vipers_boss', rankIndex: 9, rankName: 'Boss', title: 'Citywide Dominance', description: 'Launch the final citywide push and lock the Viper empire in place.', payment: 1150, repReward: 70, requiredFactionRep: 980, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
   ],
   'Iron Wolves': [
-    { id: 'iron_wolves_prospect', rankIndex: 0, rankName: 'Prospect', title: 'Backstreet Relay', description: 'Escort a small shipment from the river edge to the safe zone.', payment: 130, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'iron_wolves_street_runner', rankIndex: 1, rankName: 'Street Runner', title: 'Fence Run', description: 'Run a swift route to the market and secure the valuables before intercept.', payment: 190, repReward: 18, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'iron_wolves_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Riot Control', description: 'Break up a rival push along the riverfront and recover the payment.', payment: 270, repReward: 25, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'iron_wolves_driver', rankIndex: 3, rankName: 'Driver', title: 'Night Route', description: 'Deliver the load through every crossroad and keep it from being flagged.', payment: 340, repReward: 31, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'iron_wolves_dealer', rankIndex: 4, rankName: 'Dealer', title: 'Warehouse Exchange', description: 'Lock down a stock transfer and secure the payout from the dealer circle.', payment: 410, repReward: 37, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'iron_wolves_specialist', rankIndex: 5, rankName: 'Specialist', title: 'Signal Breach', description: 'Plant false signals and jam the rival grid in the East Faction sectors.', payment: 520, repReward: 44, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
-    { id: 'iron_wolves_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Frontline Hold', description: 'Command a raid and hold the route until the crew clears the stock.', payment: 630, repReward: 52, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'iron_wolves_senior_enforcer', rankIndex: 7, rankName: 'Senior Enforcer', title: 'Southside Pressure', description: 'Push through the South Gang edge and keep the rival block collapsed.', payment: 780, repReward: 60, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
-    { id: 'iron_wolves_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Route Lock', description: 'Take over high-value transit and route each drop to the iron chain.', payment: 930, repReward: 72, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'iron_wolves_boss', rankIndex: 9, rankName: 'Boss', title: 'Final Dominion', description: 'Finish the citywide takeover and seal the Wolf coalition under one brand.', payment: 1180, repReward: 92, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_prospect', rankIndex: 0, rankName: 'Prospect', title: 'Backstreet Relay', description: 'Escort a small shipment from the river edge to the safe zone.', payment: 130, repReward: 12, requiredFactionRep: 0, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_street_runner', rankIndex: 1, rankName: 'Street Runner', title: 'Fence Run', description: 'Run a swift route to the market and secure the valuables before intercept.', payment: 205, repReward: 15, requiredFactionRep: 40, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Riot Control', description: 'Break up a rival push along the riverfront and recover the payment.', payment: 270, repReward: 18, requiredFactionRep: 80, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_driver', rankIndex: 3, rankName: 'Driver', title: 'Night Route', description: 'Deliver the load through every crossroad and keep it from being flagged.', payment: 340, repReward: 20, requiredFactionRep: 130, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_dealer', rankIndex: 4, rankName: 'Dealer', title: 'Warehouse Exchange', description: 'Lock down a stock transfer and secure the payout from the dealer circle.', payment: 410, repReward: 24, requiredFactionRep: 200, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_specialist', rankIndex: 5, rankName: 'Specialist', title: 'Signal Breach', description: 'Plant false signals and jam the rival grid in the East Faction sectors.', payment: 520, repReward: 30, requiredFactionRep: 280, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'iron_wolves_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Frontline Hold', description: 'Command a raid and hold the route until the crew clears the stock.', payment: 660, repReward: 38, requiredFactionRep: 380, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_senior_enforcer', rankIndex: 7, rankName: 'Senior Enforcer', title: 'Southside Pressure', description: 'Push through the South Gang edge and keep the rival block collapsed.', payment: 780, repReward: 48, requiredFactionRep: 500, targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
+    { id: 'iron_wolves_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Route Lock', description: 'Take over high-value transit and route each drop to the iron chain.', payment: 930, repReward: 54, requiredFactionRep: 700, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'iron_wolves_boss', rankIndex: 9, rankName: 'Boss', title: 'Final Dominion', description: 'Finish the citywide takeover and seal the Wolf coalition under one brand.', payment: 1180, repReward: 72, requiredFactionRep: 980, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
   ],
   'Crown Syndicate': [
-    { id: 'crown_syndicate_associate', rankIndex: 0, rankName: 'Associate', title: 'Purse Run', description: 'Handle a quiet transfer through the river corridor and keep the ledger clean.', payment: 150, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'crown_syndicate_courier', rankIndex: 1, rankName: 'Courier', title: 'Glass Route', description: 'Deliver a priority package between syndicate fronts before sunset.', payment: 210, repReward: 18, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'crown_syndicate_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Harbor Pressure', description: 'Hold the harbor route against rival pressure and collect the recovered fees.', payment: 290, repReward: 26, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'crown_syndicate_driver', rankIndex: 3, rankName: 'Driver', title: 'Gold Runner', description: 'Move the cash convoy through mixed routes without losing the escort.', payment: 350, repReward: 32, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'crown_syndicate_specialist', rankIndex: 4, rankName: 'Specialist', title: 'Quiet Entry', description: 'Slip in with a false manifest and secure the premium stash before dawn.', payment: 430, repReward: 38, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'crown_syndicate_security_officer', rankIndex: 5, rankName: 'Security Officer', title: 'Vault Watch', description: 'Guard a high-value vault and stop the extraction attempt at the doors.', payment: 540, repReward: 45, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'crown_syndicate_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Prize Lift', description: 'Turn the collection team into a successful extraction and secure all payments.', payment: 660, repReward: 54, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'crown_syndicate_captain', rankIndex: 7, rankName: 'Captain', title: 'Crown Sweep', description: 'Sweep the city block, clear the suspects, and dominate the syndicate lane.', payment: 800, repReward: 62, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 80, y: 1120, w: 820, h: 380 } },
-    { id: 'crown_syndicate_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Golden Contract', description: 'Seal a major contract and force the remaining fronts to comply.', payment: 960, repReward: 74, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'crown_syndicate_boss', rankIndex: 9, rankName: 'Boss', title: 'Empire Crown', description: 'Claim the city’s largest network and set the new Syndicate order in motion.', payment: 1200, repReward: 95, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_associate', rankIndex: 0, rankName: 'Associate', title: 'Purse Run', description: 'Handle a quiet transfer through the river corridor and keep the ledger clean.', payment: 120, repReward: 12, requiredFactionRep: 0, targetZone: { x: 1180, y: 0, w: 820, h: 520 } },
+    { id: 'crown_syndicate_courier', rankIndex: 1, rankName: 'Courier', title: 'Glass Route', description: 'Deliver a priority package between syndicate fronts before sunset.', payment: 210, repReward: 16, requiredFactionRep: 40, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_enforcer', rankIndex: 2, rankName: 'Enforcer', title: 'Harbor Pressure', description: 'Hold the harbor route against rival pressure and collect the recovered fees.', payment: 280, repReward: 18, requiredFactionRep: 80, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_driver', rankIndex: 3, rankName: 'Driver', title: 'Gold Runner', description: 'Move the cash convoy through mixed routes without losing the escort.', payment: 350, repReward: 20, requiredFactionRep: 130, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_specialist', rankIndex: 4, rankName: 'Specialist', title: 'Quiet Entry', description: 'Slip in with a false manifest and secure the premium stash before dawn.', payment: 440, repReward: 25, requiredFactionRep: 200, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_security_officer', rankIndex: 5, rankName: 'Security Officer', title: 'Vault Watch', description: 'Guard a high-value vault and stop the extraction attempt at the doors.', payment: 540, repReward: 30, requiredFactionRep: 280, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_crew_leader', rankIndex: 6, rankName: 'Crew Leader', title: 'Prize Lift', description: 'Turn the collection team into a successful extraction and secure all payments.', payment: 680, repReward: 40, requiredFactionRep: 380, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_captain', rankIndex: 7, rankName: 'Captain', title: 'Crown Sweep', description: 'Sweep the city block, clear the suspects, and dominate the syndicate lane.', payment: 800, repReward: 46, requiredFactionRep: 500, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
+    { id: 'crown_syndicate_underboss', rankIndex: 8, rankName: 'Underboss', title: 'Golden Contract', description: 'Seal a major contract and force the remaining fronts to comply.', payment: 960, repReward: 56, requiredFactionRep: 700, targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
+    { id: 'crown_syndicate_boss', rankIndex: 9, rankName: 'Boss', title: 'Empire Crown', description: 'Claim the city’s largest network and set the new Syndicate order in motion.', payment: 1200, repReward: 72, requiredFactionRep: 980, targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
   ],
   'Metro Police Department': [
-    { id: 'mpd_recruit', rankIndex: 0, rankName: 'Police Recruit', title: 'Beat Patrol', description: 'Complete a pattern patrol near city hall and confirm local safety checks.', payment: 140, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_police_officer', rankIndex: 1, rankName: 'Police Officer', title: 'Hot Spot Scan', description: 'Respond to suspicious activity near the central district and file a clean review.', payment: 200, repReward: 19, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_senior_officer', rankIndex: 2, rankName: 'Senior Officer', title: 'Evidence Run', description: 'Gather key evidence and secure the route during a rapid response.', payment: 280, repReward: 26, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_patrol_officer', rankIndex: 3, rankName: 'Patrol Officer', title: 'District Sweep', description: 'Cover the city blocks and keep the route stable for the department watch.', payment: 360, repReward: 33, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_traffic_officer', rankIndex: 4, rankName: 'Traffic Officer', title: 'Street Control', description: 'Regulate key intersections and keep movement safe during the evening rush.', payment: 440, repReward: 40, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
-    { id: 'mpd_detective', rankIndex: 5, rankName: 'Detective', title: 'Case File Search', description: 'Trace the suspect pattern and collect intel before the next raid.', payment: 560, repReward: 48, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_corporal', rankIndex: 6, rankName: 'Corporal', title: 'Night Detail', description: 'Lead a squad through a sustained check of the admin district routes.', payment: 680, repReward: 56, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_sergeant', rankIndex: 7, rankName: 'Sergeant', title: 'Unit Response', description: 'Coordinate a high-pressure response against organized activity in the city core.', payment: 820, repReward: 64, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'mpd_lieutenant', rankIndex: 8, rankName: 'Lieutenant', title: 'Operations Sweep', description: 'Run an organized enforcement action and secure the department’s district control.', payment: 980, repReward: 76, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'mpd_captain', rankIndex: 9, rankName: 'Captain', title: 'City Lockdown', description: 'Lead the final citywide response and stabilize the capital district.', payment: 1220, repReward: 97, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-  ],
-  'City Highway Patrol': [
-    { id: 'chp_cadet', rankIndex: 0, rankName: 'Cadet', title: 'Highway Check', description: 'Inspect road access and verify patrol markers along the east corridor.', payment: 135, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_patrol_officer', rankIndex: 1, rankName: 'Patrol Officer', title: 'Access Patrol', description: 'Monitor road traffic and flag any suspicious vehicle stops.', payment: 205, repReward: 19, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_traffic_officer', rankIndex: 2, rankName: 'Traffic Officer', title: 'Lane Control', description: 'Secure the key interchange and coordinate safe movement through the route.', payment: 285, repReward: 27, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1100, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_highway_officer', rankIndex: 3, rankName: 'Highway Officer', title: 'Roadside Escort', description: 'Escort a security convoy and clear each road section to a safe checkpoint.', payment: 365, repReward: 34, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'chp_senior_patrol_officer', rankIndex: 4, rankName: 'Senior Patrol Officer', title: 'Interchange Watch', description: 'Establish a direct road watch and keep the crossroads open for emergency traffic.', payment: 450, repReward: 41, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_motorcycle_officer', rankIndex: 5, rankName: 'Motorcycle Officer', title: 'Rapid Response', description: 'Cover a fast-moving pursuit and maintain road control during the chase.', payment: 570, repReward: 49, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1100, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_corporal', rankIndex: 6, rankName: 'Corporal', title: 'Blocker Detail', description: 'Lead the roadblock team and keep illegal traffic from passing the perimeter.', payment: 690, repReward: 57, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_sergeant', rankIndex: 7, rankName: 'Sergeant', title: 'Highway Raid', description: 'Coordinate the highway assault on a blocked route and secure the corridor.', payment: 835, repReward: 66, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1100, y: 0, w: 120, h: 1600 } },
-    { id: 'chp_lieutenant', rankIndex: 8, rankName: 'Lieutenant', title: 'Transport Shield', description: 'Secure the transport lanes and keep the highway network protected during the night cycle.', payment: 995, repReward: 78, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'chp_captain', rankIndex: 9, rankName: 'Captain', title: 'Regional Defense', description: 'Direct the final road defense plan and lock down the city’s access routes.', payment: 1240, repReward: 98, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
-  ],
-  'National Defense Force': [
-    { id: 'ndf_recruit', rankIndex: 0, rankName: 'Recruit', title: 'Perimeter Walk', description: 'Inspect the outer edge and confirm the defense line is active and stable.', payment: 155, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'ndf_private', rankIndex: 1, rankName: 'Private', title: 'Field Sweep', description: 'Scan the river block and verify no unauthorized movement crosses the defense line.', payment: 215, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'ndf_private_first_class', rankIndex: 2, rankName: 'Private First Class', title: 'Signal Watch', description: 'Hold an observation point and relay critical intel across the east pass.', payment: 295, repReward: 27, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
-    { id: 'ndf_specialist', rankIndex: 3, rankName: 'Specialist', title: 'Battery Relay', description: 'Maintain the power relay route and secure all equipment needed for the patrol line.', payment: 380, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'ndf_corporal', rankIndex: 4, rankName: 'Corporal', title: 'Line Breach', description: 'Repel staged incursions and hold the main defense path under the command structure.', payment: 470, repReward: 42, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'ndf_sergeant', rankIndex: 5, rankName: 'Sergeant', title: 'Forward Watch', description: 'Lead the forward team across a critical area and establish a durable tactical position.', payment: 590, repReward: 50, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'ndf_staff_sergeant', rankIndex: 6, rankName: 'Staff Sergeant', title: 'Outpost Defense', description: 'Fortify the outpost and direct the team through hostile movement near the river edge.', payment: 710, repReward: 58, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'ndf_lieutenant', rankIndex: 7, rankName: 'Lieutenant', title: 'Tactical Sweep', description: 'Coordinate a tactical sweep through multiple sectors and secure each checkpoint.', payment: 860, repReward: 67, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'ndf_captain', rankIndex: 8, rankName: 'Captain', title: 'Fortress Hold', description: 'Command the fortress line and prevent hostile penetration of the central command route.', payment: 1010, repReward: 80, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'ndf_major', rankIndex: 9, rankName: 'Major', title: 'Final Security Mandate', description: 'Execute the final strategic defense plan and secure the city’s military perimeter.', payment: 1265, repReward: 100, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-  ],
-  'State Intelligence Service': [
-    { id: 'sis_trainee', rankIndex: 0, rankName: 'Trainee', title: 'Background Scan', description: 'Review the city routes and map out suspicious patterns for the observer net.', payment: 160, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'sis_intelligence_analyst', rankIndex: 1, rankName: 'Intelligence Analyst', title: 'Pattern Review', description: 'Analyze traffic and communications data before the next action window.', payment: 220, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'sis_field_agent', rankIndex: 2, rankName: 'Field Agent', title: 'Shadow Run', description: 'Track movement in the river corridor and gather intel on the active cell.', payment: 300, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'sis_surveillance_agent', rankIndex: 3, rankName: 'Surveillance Agent', title: 'Watch Grid', description: 'Observe key intersections and build a clean picture of the activity pattern.', payment: 390, repReward: 36, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 1160, y: 200, w: 780, h: 300 } },
-    { id: 'sis_intelligence_officer', rankIndex: 4, rankName: 'Intelligence Officer', title: 'Intercept Brief', description: 'Intercept the key transmission and collect the data before it reaches the crowd.', payment: 480, repReward: 44, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'sis_senior_agent', rankIndex: 5, rankName: 'Senior Agent', title: 'Dossier Pull', description: 'Recover the briefcase and confirm the target’s scheduled movement pattern.', payment: 600, repReward: 52, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'sis_operations_lead', rankIndex: 6, rankName: 'Operations Lead', title: 'Counter Sweep', description: 'Direct the team against a compromised operation and secure the evidence trail.', payment: 720, repReward: 60, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'sis_deputy_director', rankIndex: 7, rankName: 'Deputy Director', title: 'Priority Signal', description: 'Execute a high-risk surveillance lift and secure the citywide communications ledger.', payment: 880, repReward: 69, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'sis_director', rankIndex: 8, rankName: 'Director', title: 'Blackout Run', description: 'Run the blackout operation and lock down the covert channels before the leak spreads.', payment: 1040, repReward: 82, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'sis_chief_director', rankIndex: 9, rankName: 'Chief Director', title: 'Statewide Control', description: 'Command the final intelligence operation and bring all active fronts under monitoring.', payment: 1300, repReward: 102, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-  ],
-  'Central City Medical Center': [
-    { id: 'ccmc_medical_intern', rankIndex: 0, rankName: 'Medical Intern', title: 'Supply Run', description: 'Carry supplies to emergency teams and keep the first-aid cycle moving.', payment: 145, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_medical_assistant', rankIndex: 1, rankName: 'Medical Assistant', title: 'Ward Support', description: 'Assist the staff and move patients through the central care wing.', payment: 210, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_nurse', rankIndex: 2, rankName: 'Nurse', title: 'Rapid Triage', description: 'Stabilize incoming patients and carry them into treatment before the queue breaks.', payment: 290, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_paramedic', rankIndex: 3, rankName: 'Paramedic', title: 'Street Response', description: 'Move through the active city streets and keep emergency response ready at every block.', payment: 370, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'ccmc_senior_nurse', rankIndex: 4, rankName: 'Senior Nurse', title: 'Recovery Cycle', description: 'Coordinate the ward recovery process and improve patient throughput.', payment: 455, repReward: 42, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_doctor', rankIndex: 5, rankName: 'Doctor', title: 'Trauma Case', description: 'Direct treatment for a severe trauma case and keep the emergency wing stable.', payment: 575, repReward: 50, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_emergency_doctor', rankIndex: 6, rankName: 'Emergency Doctor', title: 'Priority Surge', description: 'Handle a high-volume emergency surge and stabilize the treatment floor.', payment: 700, repReward: 58, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_surgeon', rankIndex: 7, rankName: 'Surgeon', title: 'Operating Rush', description: 'Lead the surgical response during a critical emergency and protect the team route.', payment: 850, repReward: 67, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_chief_surgeon', rankIndex: 8, rankName: 'Chief Surgeon', title: 'Citywide Trauma', description: 'Coordinate the medical response and stabilize the city during the emergency surge.', payment: 1015, repReward: 80, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'ccmc_medical_director', rankIndex: 9, rankName: 'Medical Director', title: 'Recovery Command', description: 'Direct the final emergency care network and restore city health services.', payment: 1285, repReward: 102, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-  ],
-  'Riverside General Hospital': [
-    { id: 'rgh_medical_intern', rankIndex: 0, rankName: 'Medical Intern', title: 'Supply Cart', description: 'Carry emergency stock and maintain the flow across the hospital wing.', payment: 148, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_medical_assistant', rankIndex: 1, rankName: 'Medical Assistant', title: 'Patient Check', description: 'Conduct patient intake and verify stabilization before the next transfer.', payment: 215, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_nurse', rankIndex: 2, rankName: 'Nurse', title: 'Acute Triage', description: 'Handle urgent patients and return the ward to a stable care pattern.', payment: 295, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_paramedic', rankIndex: 3, rankName: 'Paramedic', title: 'Street Lift', description: 'Recover patients from the city streets and move them into full treatment.', payment: 375, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 900, y: 100, w: 1000, h: 550 } },
-    { id: 'rgh_senior_nurse', rankIndex: 4, rankName: 'Senior Nurse', title: 'Recovery Shift', description: 'Coordinate the high-demand recovery shift and keep the care floor stable.', payment: 460, repReward: 43, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_doctor', rankIndex: 5, rankName: 'Doctor', title: 'Intensive Care', description: 'Keep a critical patient stable while the full treatment team prepares the room.', payment: 580, repReward: 51, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_emergency_doctor', rankIndex: 6, rankName: 'Emergency Doctor', title: 'Night Surge', description: 'Handle a sudden emergency rush and maintain the treatment line across all units.', payment: 710, repReward: 59, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_surgeon', rankIndex: 7, rankName: 'Surgeon', title: 'Critical Response', description: 'Lead a surgical intervention and protect the emergency process during the crisis.', payment: 860, repReward: 68, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_chief_surgeon', rankIndex: 8, rankName: 'Chief Surgeon', title: 'Regional Recovery', description: 'Command the regional medical chain and coordinate all treatment priorities.', payment: 1030, repReward: 81, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-    { id: 'rgh_medical_director', rankIndex: 9, rankName: 'Medical Director', title: 'Care Network', description: 'Lead the final city recovery plan and keep the hospital system fully operational.', payment: 1295, repReward: 103, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 760, y: 1350, w: 330, h: 150 } },
-  ],
-  'Urban News Network': [
-    { id: 'unn_news_intern', rankIndex: 0, rankName: 'News Intern', title: 'Street Notes', description: 'Collect local updates and assemble the first list of city changes.', payment: 150, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'unn_camera_assistant', rankIndex: 1, rankName: 'Camera Assistant', title: 'Field Footage', description: 'Capture footage from the active city route and prepare the raw segment.', payment: 220, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'unn_reporter', rankIndex: 2, rankName: 'Reporter', title: 'City Beat', description: 'Cover the main city developments and confirm which events matter most.', payment: 300, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'unn_news_photographer', rankIndex: 3, rankName: 'News Photographer', title: 'Photowall', description: 'Document the route, collect candid images, and secure the story line.', payment: 390, repReward: 35, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'unn_field_reporter', rankIndex: 4, rankName: 'Field Reporter', title: 'Live Interview', description: 'Get key voices on the record and build the broader city story.', payment: 480, repReward: 43, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'unn_investigative_journalist', rankIndex: 5, rankName: 'Investigative Journalist', title: 'Leak Review', description: 'Trace the source of a city leak and verify the official narrative.', payment: 605, repReward: 52, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'unn_senior_reporter', rankIndex: 6, rankName: 'Senior Reporter', title: 'Headlines', description: 'Assemble the headline story and coordinate the crew around the big reveal.', payment: 725, repReward: 60, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'unn_producer', rankIndex: 7, rankName: 'Producer', title: 'Broadcast Control', description: 'Oversee the segment timeline and keep the broadcast ready for release.', payment: 885, repReward: 69, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 1040, y: 220, w: 930, h: 350 } },
-    { id: 'unn_news_director', rankIndex: 8, rankName: 'News Director', title: 'Prime Time Push', description: 'Set the final coverage plan and lock in the top stories for the city feed.', payment: 1055, repReward: 82, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-    { id: 'unn_editor_in_chief', rankIndex: 9, rankName: 'Editor-in-Chief', title: 'Front Page Rush', description: 'Write the final chapter and deliver the city’s defining narrative to the public.', payment: 1320, repReward: 104, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 1180, y: 680, w: 860, h: 470 } },
-  ],
-  'City Government Administration': [
-    { id: 'cga_administrative_intern', rankIndex: 0, rankName: 'Administrative Intern', title: 'Files Check', description: 'Organize the records and confirm the administrative route is active for the office.', payment: 155, repReward: 12, requiredFactionRep: 0, unlockText: 'Requires 0 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_clerk', rankIndex: 1, rankName: 'Clerk', title: 'Routing Review', description: 'Verify the form chain and keep the public service office moving on time.', payment: 225, repReward: 20, requiredFactionRep: 50, unlockText: 'Requires 50 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_administrative_assistant', rankIndex: 2, rankName: 'Administrative Assistant', title: 'Office Flow', description: 'Support staff across the city administration flow and keep the service queue stable.', payment: 305, repReward: 28, requiredFactionRep: 120, unlockText: 'Requires 120 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_government_officer', rankIndex: 3, rankName: 'Government Officer', title: 'Public Check', description: 'Handle the compliance route and secure the next review cycle for the district.', payment: 395, repReward: 36, requiredFactionRep: 200, unlockText: 'Requires 200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_senior_officer', rankIndex: 4, rankName: 'Senior Officer', title: 'Program Review', description: 'Coordinate a city initiative review and confirm the route remains on schedule.', payment: 490, repReward: 44, requiredFactionRep: 300, unlockText: 'Requires 300 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_department_analyst', rankIndex: 5, rankName: 'Department Analyst', title: 'Briefing Cycle', description: 'Collect datasets and prepare the official policy briefing for the administrative block.', payment: 610, repReward: 53, requiredFactionRep: 450, unlockText: 'Requires 450 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_section_chief', rankIndex: 6, rankName: 'Section Chief', title: 'Service Seal', description: 'Lead the section and secure the service order against disruption in the district.', payment: 735, repReward: 61, requiredFactionRep: 650, unlockText: 'Requires 650 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_deputy_director', rankIndex: 7, rankName: 'Deputy Director', title: 'Strategy Route', description: 'Execute the department plan and direct all operations toward city stability.', payment: 890, repReward: 70, requiredFactionRep: 900, unlockText: 'Requires 900 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_director', rankIndex: 8, rankName: 'Director', title: 'City Briefing', description: 'Lead the final briefing and reframe the city administration priorities for the people.', payment: 1060, repReward: 83, requiredFactionRep: 1200, unlockText: 'Requires 1200 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
-    { id: 'cga_commissioner', rankIndex: 9, rankName: 'Commissioner', title: 'Final Order', description: 'Start the final administration order and lock the public network into place for the city.', payment: 1335, repReward: 105, requiredFactionRep: 1600, unlockText: 'Requires 1600 faction rep', targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_recruit', rankIndex: 0, rankName: 'Police Recruit', title: 'Beat Patrol', description: 'Complete a pattern patrol near city hall and confirm local safety checks.', payment: 140, repReward: 12, requiredFactionRep: 0, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_police_officer', rankIndex: 1, rankName: 'Police Officer', title: 'Hot Spot Scan', description: 'Respond to suspicious activity near the central district and file a clean review.', payment: 210, repReward: 16, requiredFactionRep: 40, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_senior_officer', rankIndex: 2, rankName: 'Senior Officer', title: 'Evidence Run', description: 'Gather key evidence and secure the route during a rapid response.', payment: 280, repReward: 20, requiredFactionRep: 80, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_patrol_officer', rankIndex: 3, rankName: 'Patrol Officer', title: 'District Sweep', description: 'Cover the city blocks and keep the route stable for the department watch.', payment: 365, repReward: 22, requiredFactionRep: 130, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_traffic_officer', rankIndex: 4, rankName: 'Traffic Officer', title: 'Street Control', description: 'Regulate key intersections and keep movement safe during the evening rush.', payment: 440, repReward: 25, requiredFactionRep: 200, targetZone: { x: 500, y: 0, w: 120, h: 1600 } },
+    { id: 'mpd_detective', rankIndex: 5, rankName: 'Detective', title: 'Case File Search', description: 'Trace the suspect pattern and collect intel before the next raid.', payment: 560, repReward: 30, requiredFactionRep: 280, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_corporal', rankIndex: 6, rankName: 'Corporal', title: 'Night Detail', description: 'Lead a squad through a sustained check of the admin district routes.', payment: 680, repReward: 38, requiredFactionRep: 380, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_sergeant', rankIndex: 7, rankName: 'Sergeant', title: 'Unit Response', description: 'Coordinate a high-pressure response against organized activity in the city core.', payment: 820, repReward: 46, requiredFactionRep: 500, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_lieutenant', rankIndex: 8, rankName: 'Lieutenant', title: 'Operations Sweep', description: 'Run an organized enforcement action and secure the department’s district control.', payment: 950, repReward: 54, requiredFactionRep: 700, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
+    { id: 'mpd_captain', rankIndex: 9, rankName: 'Captain', title: 'City Lockdown', description: 'Lead the final citywide response and stabilize the capital district.', payment: 1220, repReward: 72, requiredFactionRep: 980, targetZone: { x: 160, y: 1290, w: 760, h: 280 } },
   ],
 };
 
@@ -891,6 +812,11 @@ function updatePlayer(dt) {
   if (keys['a'] || keys['arrowleft']) dx -= 1;
   if (keys['d'] || keys['arrowright']) dx += 1;
 
+  if (touchInput.x < -0.2) dx -= 1;
+  if (touchInput.x > 0.2) dx += 1;
+  if (touchInput.y < -0.2) dy -= 1;
+  if (touchInput.y > 0.2) dy += 1;
+
   if (dx !== 0 || dy !== 0) {
     const length = Math.hypot(dx, dy) || 1;
     dx /= length;
@@ -1197,19 +1123,21 @@ function drawQuestPanel() {
 }
 
 function drawControls() {
+  const panelX = Math.max(18, canvas.width - 300);
+  const panelY = Math.min(canvas.height - 158, canvas.height - 150);
   ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-  ctx.fillRect(canvas.width - 290, 18, 260, 110);
+  ctx.fillRect(panelX, panelY, 260, 120);
   ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.strokeRect(canvas.width - 290, 18, 260, 110);
+  ctx.strokeRect(panelX, panelY, 260, 120);
 
   ctx.fillStyle = '#f8fafc';
   ctx.font = '15px Arial';
-  ctx.fillText('Controls', canvas.width - 260, 42);
+  ctx.fillText('Controls', panelX + 24, panelY + 26);
   ctx.font = '13px Arial';
-  ctx.fillText('WASD / Arrows = move', canvas.width - 260, 66);
-  ctx.fillText('F = strike / attack', canvas.width - 260, 88);
-  ctx.fillText('H = medkit', canvas.width - 260, 110);
-  ctx.fillText('E = talk/job', canvas.width - 260, 132);
+  ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+  ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+  ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+  ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
 }
 
 function render() {
@@ -1220,6 +1148,65 @@ function render() {
   drawPlayer(cameraX, cameraY);
   drawQuestPanel();
   drawControls();
+}
+
+function handleTouchButtonPress(control) {
+  const button = document.querySelector(`[data-control="${control}"]`);
+  if (button) {
+    button.classList.add('pressed');
+    setTimeout(() => button.classList.remove('pressed'), 120);
+  }
+
+  switch (control) {
+    case 'attack':
+      performAttack();
+      break;
+    case 'interact':
+      keys.e = true;
+      keys.interactLock = false;
+      updateNPCInteraction();
+      setTimeout(() => { keys.e = false; }, 150);
+      break;
+    case 'medkit':
+      useMedkit();
+      break;
+    case 'job':
+      toggleJobBoard();
+      break;
+    case 'inventory':
+      toggleInventory();
+      break;
+    default:
+      break;
+  }
+}
+
+function setJoystickFromPointer(clientX, clientY) {
+  const rect = joystickBase.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const dx = clientX - centerX;
+  const dy = clientY - centerY;
+  const distance = Math.min(Math.hypot(dx, dy), joystickState.radius);
+  const angle = Math.atan2(dy, dx);
+  const offsetX = Math.cos(angle) * distance;
+  const offsetY = Math.sin(angle) * distance;
+
+  joystickThumb.style.transform = `translate(${offsetX - 26}px, ${offsetY - 26}px)`;
+  const normX = distance === 0 ? 0 : offsetX / joystickState.radius;
+  const normY = distance === 0 ? 0 : offsetY / joystickState.radius;
+  touchInput.x = clamp(normX, -1, 1);
+  touchInput.y = clamp(normY, -1, 1);
+  touchInput.active = true;
+}
+
+function resetJoystick() {
+  touchInput.x = 0;
+  touchInput.y = 0;
+  touchInput.active = false;
+  joystickThumb.style.transform = 'translate(-50%, -50%)';
+  joystickState.active = false;
+  joystickState.pointerId = null;
 }
 
 window.addEventListener('keydown', (event) => {
@@ -1294,6 +1281,32 @@ closeFactionButton.addEventListener('click', () => toggleFactionPanel(false));
 abandonJobBtn.addEventListener('click', () => abandonJob());
 window.addEventListener('resize', resizeCanvas);
 
+joystickBase.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+  joystickState.active = true;
+  joystickState.pointerId = event.pointerId;
+  joystickBase.setPointerCapture(event.pointerId);
+  setJoystickFromPointer(event.clientX, event.clientY);
+});
+
+joystickBase.addEventListener('pointermove', (event) => {
+  if (!joystickState.active || event.pointerId !== joystickState.pointerId) return;
+  setJoystickFromPointer(event.clientX, event.clientY);
+});
+
+joystickBase.addEventListener('pointerup', () => resetJoystick());
+joystickBase.addEventListener('pointercancel', () => resetJoystick());
+joystickBase.addEventListener('pointerleave', () => {
+  if (joystickState.active) resetJoystick();
+});
+
+controlButtons.forEach((button) => {
+  button.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    handleTouchButtonPress(button.dataset.control);
+  });
+});
+
 resizeCanvas();
 updateHud();
 refreshInventoryUI();
@@ -1312,3 +1325,2222 @@ function gameLoop(timestamp) {
 }
 
 requestAnimationFrame(gameLoop);
+
+window.addEventListener('blur', () => {
+  Object.keys(keys).forEach((key) => {
+    keys[key] = false;
+  });
+  resetJoystick();
+});
+
+window.addEventListener('contextmenu', (event) => event.preventDefault());
+
+setInterval(() => {
+  if (!touchInput.active) {
+    touchInput.x = 0;
+    touchInput.y = 0;
+  }
+}, 100);
+
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const mobileControls = document.getElementById('mobileControls');
+  if (mobileControls) {
+    mobileControls.style.display = 'none';
+  }
+}
+
+window.addEventListener('orientationchange', () => {
+  resizeCanvas();
+});
+
+window.addEventListener('pointerup', () => {
+  resetJoystick();
+});
+
+window.addEventListener('pointercancel', () => {
+  resetJoystick();
+});
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('.touch-button') || event.target.closest('.joystick-base')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  resetJoystick();
+});
+
+window.addEventListener('touchcancel', () => {
+  resetJoystick();
+});
+
+const alsoTouchButtons = [...document.querySelectorAll('.touch-button')];
+alsoTouchButtons.forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+  });
+});
+
+const mobileControls = document.getElementById('mobileControls');
+if (mobileControls) {
+  mobileControls.setAttribute('aria-live', 'polite');
+}
+
+if (window.innerWidth <= 700) {
+  document.body.classList.add('mobile-layout');
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.classList.add('mobile-layout');
+  } else {
+    document.body.classList.remove('mobile-layout');
+  }
+});
+
+const pointerLockReset = () => {
+  resetJoystick();
+  Object.keys(keys).forEach((key) => {
+    if (key.startsWith('arrow')) {
+      keys[key] = false;
+    }
+  });
+};
+
+window.addEventListener('pointerup', pointerLockReset);
+window.addEventListener('pointercancel', pointerLockReset);
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Tab') {
+    event.preventDefault();
+  }
+});
+
+window.addEventListener('wheel', (event) => {
+  event.preventDefault();
+}, { passive: false });
+
+if ('ontouchstart' in window) {
+  document.body.style.touchAction = 'none';
+}
+
+window.addEventListener('deviceorientation', () => {
+  if (window.innerWidth <= 700) {
+    resizeCanvas();
+  }
+});
+
+const navButtons = [...document.querySelectorAll('.touch-button')];
+navButtons.forEach((button) => {
+  button.addEventListener('contextmenu', (event) => event.preventDefault());
+});
+
+window.addEventListener('touchstart', () => {
+  if (window.innerWidth <= 700) {
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+  }
+}, { passive: true });
+
+const joystickBaseRect = () => joystickBase.getBoundingClientRect();
+window.addEventListener('pointermove', (event) => {
+  if (joystickState.active && joystickBaseRect && event.pointerId === joystickState.pointerId) {
+    setJoystickFromPointer(event.clientX, event.clientY);
+  }
+});
+
+window.addEventListener('dragstart', (event) => event.preventDefault());
+
+if (window.innerWidth <= 700) {
+  document.body.style.overflow = 'hidden';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+});
+
+window.addEventListener('mouseleave', () => resetJoystick());
+
+if (window.innerWidth <= 700) {
+  const hud = document.getElementById('hud');
+  if (hud) {
+    hud.style.paddingTop = '10px';
+  }
+}
+
+const actionButtons = [...document.querySelectorAll('.touch-button')];
+actionButtons.forEach((button) => {
+  button.addEventListener('pointerup', () => button.classList.remove('pressed'));
+  button.addEventListener('pointercancel', () => button.classList.remove('pressed'));
+});
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  } else {
+    drawControls = function drawControls() {
+      const panelX = Math.max(18, canvas.width - 300);
+      const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+      ctx.fillRect(panelX, panelY, 260, 120);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.strokeRect(panelX, panelY, 260, 120);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '15px Arial';
+      ctx.fillText('Controls', panelX + 24, panelY + 26);
+      ctx.font = '13px Arial';
+      ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+      ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+      ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+      ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+    };
+  }
+});
+
+if (window.innerWidth <= 700) {
+  const controlsPanel = document.getElementById('gameCanvas');
+  if (controlsPanel) {
+    controlsPanel.style.pointerEvents = 'auto';
+  }
+}
+
+requestAnimationFrame(gameLoop);
+
+if (window.innerWidth <= 700) {
+  if (mobileControls) {
+    mobileControls.style.display = 'flex';
+  }
+}
+
+if (window.innerWidth > 700) {
+  if (mobileControls) {
+    mobileControls.style.display = 'none';
+  }
+}
+
+window.addEventListener('resize', () => {
+  const mobileControlsVisible = window.innerWidth <= 700;
+  if (mobileControls) {
+    mobileControls.style.display = mobileControlsVisible ? 'flex' : 'none';
+  }
+});
+
+window.addEventListener('pointerdown', () => {
+  if (!document.body.classList.contains('mobile-layout')) return;
+  if (window.innerWidth > 700) return;
+  document.body.style.overscrollBehavior = 'none';
+});
+
+window.addEventListener('touchmove', (event) => {
+  if (window.innerWidth <= 700) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('keydown', (event) => {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+    event.preventDefault();
+  }
+});
+
+window.addEventListener('touchstart', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+if (window.innerWidth <= 700) {
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+  });
+}
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch') {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+const uiReferences = {
+  hud: document.getElementById('hud'),
+  mobileControls,
+  canvas,
+};
+
+if (uiReferences.hud && window.innerWidth <= 700) {
+  uiReferences.hud.style.zIndex = '12';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    if (uiReferences.hud) uiReferences.hud.style.zIndex = '12';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const controlsButton = document.querySelector('.touch-button-job');
+if (controlsButton) {
+  controlsButton.addEventListener('click', () => toggleJobBoard());
+}
+
+const inventoryButton = document.querySelector('.touch-button-inventory');
+if (inventoryButton) {
+  inventoryButton.addEventListener('click', () => toggleInventory());
+}
+
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    resetJoystick();
+  }
+});
+
+window.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'touch') {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target instanceof HTMLElement && event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+const defaultDrawControls = function drawControls() {
+  const panelX = Math.max(18, canvas.width - 300);
+  const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+  ctx.fillRect(panelX, panelY, 260, 120);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.strokeRect(panelX, panelY, 260, 120);
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = '15px Arial';
+  ctx.fillText('Controls', panelX + 24, panelY + 26);
+  ctx.font = '13px Arial';
+  ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+  ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+  ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+  ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+};
+
+if (window.innerWidth > 700) {
+  drawControls = defaultDrawControls;
+}
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+}
+
+const handleControlButtonPress = (button) => {
+  if (!button) return;
+  const action = button.dataset.control;
+  handleTouchButtonPress(action);
+};
+
+controlButtons.forEach((button) => {
+  button.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    handleControlButtonPress(button);
+  });
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  } else {
+    drawControls = defaultDrawControls;
+  }
+});
+
+if (window.innerWidth <= 700) {
+  document.body.classList.add('touch-device');
+}
+
+if (window.innerWidth > 700) {
+  document.body.classList.remove('touch-device');
+}
+
+const docTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (docTouch) {
+  document.body.classList.add('touch-device');
+}
+
+window.addEventListener('resize', () => {
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    document.body.classList.add('touch-device');
+  }
+});
+
+window.addEventListener('touchstart', () => {
+  if (window.innerWidth <= 700) {
+    document.body.classList.add('touch-device');
+  }
+}, { passive: true });
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch') {
+    document.body.classList.add('touch-device');
+  }
+}, { passive: true });
+
+window.addEventListener('pointerup', () => {
+  if (window.innerWidth <= 700) {
+    document.body.classList.add('touch-device');
+  }
+}, { passive: true });
+
+const touchActiveCheck = () => {
+  if (window.innerWidth <= 700) {
+    document.body.classList.add('touch-device');
+  }
+};
+
+window.addEventListener('resize', touchActiveCheck);
+window.addEventListener('orientationchange', touchActiveCheck);
+
+if (window.innerWidth <= 700) {
+  resizeCanvas();
+}
+
+if (window.innerWidth <= 700) {
+  Object.defineProperty(window, 'innerWidth', { value: window.innerWidth, writable: true });
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    resizeCanvas();
+  }
+});
+
+window.addEventListener('load', () => {
+  resizeCanvas();
+});
+
+const controlsOnly = document.querySelector('#mobileControls');
+if (controlsOnly && window.innerWidth <= 700) {
+  controlsOnly.style.display = 'flex';
+}
+
+if (window.innerWidth > 700) {
+  if (controlsOnly) {
+    controlsOnly.style.display = 'none';
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (controlsOnly) {
+    controlsOnly.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+  }
+});
+
+if (window.innerWidth <= 700) {
+  document.body.style.touchAction = 'none';
+}
+
+window.addEventListener('resize', () => {
+  document.body.style.touchAction = window.innerWidth <= 700 ? 'none' : 'auto';
+});
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target instanceof Node && event.target.closest('#gameCanvas')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+const finalButtonBindings = [...document.querySelectorAll('.touch-button')];
+finalButtonBindings.forEach((button) => {
+  button.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    button.classList.add('pressed');
+  });
+  button.addEventListener('pointerup', () => button.classList.remove('pressed'));
+  button.addEventListener('pointerleave', () => button.classList.remove('pressed'));
+  button.addEventListener('pointercancel', () => button.classList.remove('pressed'));
+});
+
+window.addEventListener('contextmenu', (event) => {
+  if (event.target.closest('.touch-button') || event.target.closest('.joystick-base')) {
+    event.preventDefault();
+  }
+});
+
+const keyboardActionButtons = [...document.querySelectorAll('[data-control]')];
+keyboardActionButtons.forEach((button) => {
+  button.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleTouchButtonPress(button.dataset.control);
+    }
+  });
+});
+
+const hudStats = document.querySelectorAll('.stats div');
+hudStats.forEach((stat) => {
+  stat.style.position = 'relative';
+  stat.style.zIndex = '12';
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    hudStats.forEach((stat) => {
+      stat.style.minWidth = '72px';
+    });
+  } else {
+    hudStats.forEach((stat) => {
+      stat.style.minWidth = '90px';
+    });
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.querySelectorAll('.touch-button').forEach((button) => {
+    button.style.fontSize = '0.72rem';
+    button.style.padding = '10px 8px';
+  });
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.querySelectorAll('.touch-button').forEach((button) => {
+      button.style.fontSize = '0.72rem';
+      button.style.padding = '10px 8px';
+    });
+  } else {
+    document.querySelectorAll('.touch-button').forEach((button) => {
+      button.style.fontSize = '0.8rem';
+      button.style.padding = '12px 8px';
+    });
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'touch' && window.innerWidth <= 700) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('pointerdown', (event) => {
+  if (window.innerWidth <= 700 && event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('orientationchange', () => {
+  if (window.innerWidth <= 700) {
+    resizeCanvas();
+  }
+});
+
+window.addEventListener('focus', () => {
+  resizeCanvas();
+});
+
+window.addEventListener('load', () => {
+  if (window.innerWidth <= 700) {
+    resizeCanvas();
+  }
+});
+
+window.dispatchEvent(new Event('load'));
+
+window.addEventListener('keydown', (event) => {
+  const activeElement = document.activeElement;
+  if (activeElement && activeElement.tagName === 'BUTTON') {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+    }
+  }
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (window.innerWidth <= 700 && event.pointerType !== 'mouse') {
+    document.body.classList.add('mobile-layout');
+  }
+});
+
+window.addEventListener('resize', () => {
+  document.body.classList.toggle('mobile-layout', window.innerWidth <= 700);
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.background = 'radial-gradient(circle at top, #15253f 0%, #0b1220 60%)';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.background = 'radial-gradient(circle at top, #15253f 0%, #0b1220 60%)';
+  }
+});
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  if (window.innerWidth <= 700 && mobileControls) {
+    mobileControls.style.display = 'flex';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerleave', () => {
+  resetJoystick();
+});
+
+window.addEventListener('pointerout', () => {
+  if (document.pointerLockElement === null) {
+    resetJoystick();
+  }
+});
+
+if (typeof window !== 'undefined') {
+  window.setTimeout(() => {
+    resizeCanvas();
+  }, 50);
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    canvas.setAttribute('aria-label', 'Urban Outlaw RPG game area');
+  }
+});
+
+if (window.innerWidth <= 700) {
+  canvas.setAttribute('aria-label', 'Urban Outlaw RPG game area');
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const controls = document.querySelectorAll('.touch-button');
+    controls.forEach((control) => {
+      control.setAttribute('aria-label', control.dataset.control);
+    });
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  joystickBase.style.touchAction = 'none';
+  document.querySelectorAll('.touch-button').forEach((button) => {
+    button.style.touchAction = 'manipulation';
+  });
+}
+
+if (window.innerWidth <= 700) {
+  const header = document.querySelector('h1');
+  if (header) header.style.fontSize = '1rem';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const header = document.querySelector('h1');
+    if (header) header.style.fontSize = '1rem';
+  }
+});
+
+const ensureMobileHud = () => {
+  if (window.innerWidth <= 700) {
+    document.getElementById('hud').style.padding = '10px 12px 4px';
+  }
+};
+
+window.addEventListener('resize', ensureMobileHud);
+window.addEventListener('load', ensureMobileHud);
+ensureMobileHud();
+
+const actionButtonsContainer = document.getElementById('actionButtons');
+if (actionButtonsContainer && window.innerWidth <= 700) {
+  actionButtonsContainer.style.width = 'min(230px, 46vw)';
+}
+
+window.addEventListener('resize', () => {
+  if (actionButtonsContainer && window.innerWidth <= 700) {
+    actionButtonsContainer.style.width = 'min(230px, 46vw)';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    toggleInventory(false);
+    toggleJobBoard(false);
+    toggleFactionPanel(false);
+  }
+});
+
+const doubleTapGuard = { last: 0 };
+controlButtons.forEach((button) => {
+  button.addEventListener('pointerdown', (event) => {
+    const now = Date.now();
+    if (now - doubleTapGuard.last < 180) {
+      event.preventDefault();
+    }
+    doubleTapGuard.last = now;
+  });
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (window.innerWidth <= 700 && event.pointerType === 'touch' && event.target.closest('#gameCanvas')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#gameCanvas')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#gameCanvas')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  resetJoystick();
+}, { passive: true });
+
+window.addEventListener('pointerup', () => {
+  resetJoystick();
+}, { passive: true });
+
+window.addEventListener('pointercancel', () => {
+  resetJoystick();
+}, { passive: true });
+
+window.addEventListener('DOMContentLoaded', () => {
+  resizeCanvas();
+  updateHud();
+});
+
+window.dispatchEvent(new Event('DOMContentLoaded'));
+
+const triggerAction = (control) => handleTouchButtonPress(control);
+const controlMap = {
+  attack: () => triggerAction('attack'),
+  interact: () => triggerAction('interact'),
+  medkit: () => triggerAction('medkit'),
+  job: () => triggerAction('job'),
+  inventory: () => triggerAction('inventory'),
+};
+
+Object.entries(controlMap).forEach(([key, action]) => {
+  const btn = document.querySelector(`[data-control="${key}"]`);
+  if (btn) {
+    btn.addEventListener('click', action);
+  }
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.height = `${window.innerHeight}px`;
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && window.innerWidth <= 700) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (window.innerWidth <= 700) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (window.innerWidth <= 700) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  resetJoystick();
+}, { passive: true });
+
+const safeButtonConfig = [...document.querySelectorAll('.touch-button')];
+safeButtonConfig.forEach((button) => {
+  button.setAttribute('role', 'button');
+});
+
+window.addEventListener('keyup', (event) => {
+  if (event.key === 'Escape') {
+    keys.interactLock = false;
+    resetJoystick();
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  if (window.innerWidth <= 700) {
+    resetJoystick();
+  }
+});
+
+window.addEventListener('pointercancel', () => {
+  if (window.innerWidth <= 700) {
+    resetJoystick();
+  }
+});
+
+if (window.innerWidth <= 700) {
+  canvas.style.touchAction = 'none';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    canvas.style.touchAction = 'none';
+  }
+});
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+const cleanupPointer = () => resetJoystick();
+window.addEventListener('pointerleave', cleanupPointer);
+window.addEventListener('blur', cleanupPointer);
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden) cleanupPointer();
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  resizeCanvas();
+  updateHud();
+});
+
+if (window.innerWidth <= 700) {
+  document.querySelectorAll('.touch-button').forEach((button) => button.style.fontSize = '0.7rem');
+}
+
+resizeCanvas();
+updateHud();
+renderJobBoard();
+renderFactionPanel();
+objectiveEl.textContent = `Objective: Reach the ${zoneQuests[0].name} district.`;
+
+requestAnimationFrame(gameLoop);
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', resetJoystick, { passive: true });
+window.addEventListener('pointerup', resetJoystick, { passive: true });
+window.addEventListener('pointercancel', resetJoystick, { passive: true });
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && joystickBase.contains(event.target)) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('resize', () => {
+  canvas.style.width = `${window.innerWidth}px`;
+  canvas.style.height = `${window.innerHeight}px`;
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+}
+
+if (window.innerWidth > 700) {
+  drawControls = function drawControls() {
+    const panelX = Math.max(18, canvas.width - 300);
+    const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+    ctx.fillRect(panelX, panelY, 260, 120);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeRect(panelX, panelY, 260, 120);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '15px Arial';
+    ctx.fillText('Controls', panelX + 24, panelY + 26);
+    ctx.font = '13px Arial';
+    ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+    ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+    ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+    ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+  };
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  } else {
+    drawControls = function drawControls() {
+      const panelX = Math.max(18, canvas.width - 300);
+      const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+      ctx.fillRect(panelX, panelY, 260, 120);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.strokeRect(panelX, panelY, 260, 120);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '15px Arial';
+      ctx.fillText('Controls', panelX + 24, panelY + 26);
+      ctx.font = '13px Arial';
+      ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+      ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+      ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+      ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+    };
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const finalControllerState = { last: 0 };
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch') {
+    finalControllerState.last = Date.now();
+  }
+}, { passive: true });
+
+window.dispatchEvent(new Event('load'));
+
+if (window.innerWidth <= 700) {
+  document.body.classList.add('app-mobile');
+}
+
+window.addEventListener('resize', () => {
+  document.body.classList.toggle('app-mobile', window.innerWidth <= 700);
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', () => {
+  document.body.classList.add('app-mobile');
+}, { passive: true });
+
+window.addEventListener('pointerdown', () => {
+  if (window.innerWidth <= 700) {
+    document.body.classList.add('app-mobile');
+  }
+}, { passive: true });
+
+if (window.innerWidth <= 700) {
+  document.documentElement.style.setProperty('--mobile-hud-padding', '10px');
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.documentElement.style.setProperty('--mobile-hud-padding', '10px');
+  }
+});
+
+if (window.innerWidth <= 700) {
+  const hudElement = document.getElementById('hud');
+  if (hudElement) {
+    hudElement.style.pointerEvents = 'none';
+  }
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.userSelect = 'none';
+  }
+});
+
+if (window.innerWidth <= 700) {
+  document.body.style.userSelect = 'none';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.userSelect = 'none';
+  } else {
+    document.body.style.userSelect = 'auto';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.userSelect = 'none';
+  }
+}, { passive: true });
+
+window.addEventListener('pointerup', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.userSelect = 'none';
+  }
+}, { passive: true });
+
+window.addEventListener('keydown', (event) => {
+  if (window.innerWidth <= 700 && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+    event.preventDefault();
+  }
+});
+
+window.addEventListener('blur', () => {
+  resetJoystick();
+  Object.keys(keys).forEach((key) => { keys[key] = false; });
+});
+
+window.addEventListener('pointercancel', cleanupPointer);
+window.addEventListener('touchcancel', cleanupPointer);
+
+const mobileVisible = () => window.innerWidth <= 700;
+window.addEventListener('resize', () => {
+  const visible = mobileVisible();
+  if (mobileControls) mobileControls.style.display = visible ? 'flex' : 'none';
+  drawControls = visible ? () => {} : function drawControls() {
+    const panelX = Math.max(18, canvas.width - 300);
+    const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+    ctx.fillRect(panelX, panelY, 260, 120);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeRect(panelX, panelY, 260, 120);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '15px Arial';
+    ctx.fillText('Controls', panelX + 24, panelY + 26);
+    ctx.font = '13px Arial';
+    ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+    ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+    ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+    ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+  };
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const boundButtons = [...document.querySelectorAll('[data-control]')];
+boundButtons.forEach((button) => {
+  button.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    handleTouchButtonPress(button.dataset.control);
+  }, { passive: false });
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    handleTouchButtonPress(event.target.closest('.touch-button').dataset.control);
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    const touch = event.touches[0];
+    if (touch) setJoystickFromPointer(touch.clientX, touch.clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    const touch = event.touches[0];
+    if (touch) setJoystickFromPointer(touch.clientX, touch.clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', () => resetJoystick(), { passive: true });
+window.addEventListener('touchcancel', () => resetJoystick(), { passive: true });
+
+if (navigator.maxTouchPoints > 0 || 'ontouchstart' in window) {
+  document.body.classList.add('touch-device');
+}
+window.addEventListener('resize', () => {
+  document.body.classList.toggle('touch-device', navigator.maxTouchPoints > 0 || 'ontouchstart' in window);
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const mobileControlsVisible = document.getElementById('mobileControls');
+  if (mobileControlsVisible) {
+    mobileControlsVisible.style.display = 'flex';
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const mobileControlsVisible = document.getElementById('mobileControls');
+    if (mobileControlsVisible) {
+      mobileControlsVisible.style.display = 'flex';
+    }
+  }
+});
+
+window.addEventListener('touchmove', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('pointerdown', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+if (window.innerWidth <= 700) {
+  document.querySelectorAll('.touch-button').forEach((button) => {
+    button.style.marginBottom = '0';
+  });
+}
+
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.touch-button').forEach((button) => {
+    button.style.marginBottom = window.innerWidth <= 700 ? '0' : '';
+  });
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const appReady = () => {
+  resizeCanvas();
+  updateHud();
+  updateFactionRankState();
+};
+
+window.addEventListener('load', appReady);
+window.addEventListener('resize', appReady);
+appReady();
+
+if (window.innerWidth <= 700) {
+  const topbar = document.querySelector('.topbar');
+  if (topbar) topbar.style.gap = '8px';
+}
+
+window.addEventListener('resize', () => {
+  const topbar = document.querySelector('.topbar');
+  if (topbar && window.innerWidth <= 700) {
+    topbar.style.gap = '8px';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    setJoystickFromPointer(event.touches[0].clientX, event.touches[0].clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    setJoystickFromPointer(event.touches[0].clientX, event.touches[0].clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('pointerleave', () => {
+  resetJoystick();
+});
+
+window.addEventListener('orientationchange', () => {
+  resizeCanvas();
+  resetJoystick();
+});
+
+window.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    resizeCanvas();
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+}
+
+const touchInputFallback = () => {
+  if (!touchInput.active) {
+    touchInput.x = 0;
+    touchInput.y = 0;
+  }
+};
+setInterval(touchInputFallback, 80);
+
+window.addEventListener('touchend', () => {
+  touchInput.x = 0;
+  touchInput.y = 0;
+}, { passive: true });
+
+window.addEventListener('pointerup', () => {
+  touchInput.x = 0;
+  touchInput.y = 0;
+}, { passive: true });
+
+window.addEventListener('keyup', (event) => {
+  if (event.key.toLowerCase() === 'e') {
+    keys.e = false;
+  }
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && window.innerWidth <= 700) {
+    canvas.focus();
+  }
+}, { passive: true });
+
+window.addEventListener('keydown', (event) => {
+  if (event.key.toLowerCase() === 'e') {
+    keys['e'] = true;
+  }
+});
+
+window.addEventListener('keyup', (event) => {
+  if (event.key.toLowerCase() === 'e') {
+    keys['e'] = false;
+    keys.interactLock = false;
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const finalMobileUi = document.getElementById('mobileControls');
+if (finalMobileUi) {
+  finalMobileUi.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+}
+
+window.addEventListener('resize', () => {
+  if (finalMobileUi) {
+    finalMobileUi.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+requestAnimationFrame(gameLoop);
+
+window.addEventListener('load', () => {
+  requestAnimationFrame(gameLoop);
+});
+
+window.addEventListener('beforeunload', () => {
+  resetJoystick();
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#joystickBase')) {
+    joystickState.active = true;
+    joystickState.pointerId = event.pointerId;
+    setJoystickFromPointer(event.clientX, event.clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('pointermove', (event) => {
+  if (joystickState.active && event.pointerId === joystickState.pointerId) {
+    setJoystickFromPointer(event.clientX, event.clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('pointerup', () => {
+  resetJoystick();
+}, { passive: true });
+
+window.addEventListener('pointercancel', () => {
+  resetJoystick();
+}, { passive: true });
+
+const finalizeJoysticks = () => {
+  if (joystickBase) {
+    joystickBase.style.touchAction = 'none';
+  }
+};
+
+window.addEventListener('load', finalizeJoysticks);
+window.addEventListener('resize', finalizeJoysticks);
+finalizeJoysticks();
+
+if (window.innerWidth <= 700) {
+  window.addEventListener('touchmove', (event) => {
+    if (!event.target.closest('#joystickBase')) {
+      return;
+    }
+    event.preventDefault();
+  }, { passive: false });
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    event.preventDefault();
+    handleTouchButtonPress(event.target.closest('.touch-button').dataset.control);
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.overflow = 'hidden';
+}
+
+const userButtonPress = [...document.querySelectorAll('.touch-button')];
+userButtonPress.forEach((button) => {
+  button.addEventListener('mousedown', (event) => event.preventDefault());
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const finalTouchSetup = () => {
+  if (window.innerWidth <= 700) {
+    const controls = document.getElementById('mobileControls');
+    if (controls) controls.style.display = 'flex';
+  }
+};
+window.addEventListener('resize', finalTouchSetup);
+window.addEventListener('load', finalTouchSetup);
+finalTouchSetup();
+
+window.dispatchEvent(new Event('resize'));
+
+const hideCanvasControlsOnMobile = () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  } else {
+    drawControls = function drawControls() {
+      const panelX = Math.max(18, canvas.width - 300);
+      const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+      ctx.fillRect(panelX, panelY, 260, 120);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.strokeRect(panelX, panelY, 260, 120);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '15px Arial';
+      ctx.fillText('Controls', panelX + 24, panelY + 26);
+      ctx.font = '13px Arial';
+      ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+      ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+      ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+      ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+    };
+  }
+};
+
+window.addEventListener('resize', hideCanvasControlsOnMobile);
+window.addEventListener('load', hideCanvasControlsOnMobile);
+hideCanvasControlsOnMobile();
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+}
+
+window.dispatchEvent(new Event('resize'));
+
+if (typeof module !== 'undefined') {
+  module.exports = {};
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  resizeCanvas();
+  drawControls = window.innerWidth <= 700 ? () => {} : function drawControls() {
+    const panelX = Math.max(18, canvas.width - 300);
+    const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+    ctx.fillRect(panelX, panelY, 260, 120);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeRect(panelX, panelY, 260, 120);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '15px Arial';
+    ctx.fillText('Controls', panelX + 24, panelY + 26);
+    ctx.font = '13px Arial';
+    ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+    ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+    ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+    ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+  };
+  drawControls();
+});
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  }
+});
+
+const userReadyState = () => {
+  resizeCanvas();
+  updateHud();
+  renderJobBoard();
+  renderFactionPanel();
+};
+
+window.addEventListener('load', userReadyState);
+window.addEventListener('resize', userReadyState);
+userReadyState();
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const insetWrapper = document.getElementById('mobileControls');
+  if (insetWrapper) {
+    insetWrapper.style.bottom = '12px';
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const insetWrapper = document.getElementById('mobileControls');
+    if (insetWrapper) {
+      insetWrapper.style.bottom = '12px';
+    }
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.querySelectorAll('.touch-button').forEach((button) => {
+    button.style.pointerEvents = 'auto';
+  });
+}
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const flow = document.getElementById('mobileControls');
+  if (flow) flow.style.pointerEvents = 'none';
+}
+
+window.dispatchEvent(new Event('resize'));
+
+const registerButton = (button) => {
+  if (!button) return;
+  button.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    button.classList.add('pressed');
+    handleTouchButtonPress(button.dataset.control);
+  });
+  button.addEventListener('pointerup', () => button.classList.remove('pressed'));
+  button.addEventListener('pointerleave', () => button.classList.remove('pressed'));
+  button.addEventListener('pointercancel', () => button.classList.remove('pressed'));
+};
+
+controlButtons.forEach(registerButton);
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const fixedPanel = document.getElementById('mobileControls');
+    if (fixedPanel) {
+      fixedPanel.style.display = 'flex';
+      fixedPanel.style.pointerEvents = 'auto';
+    }
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('.touch-button') || event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+const mobileReadyState = () => {
+  if (window.innerWidth <= 700) {
+    const fixedPanel = document.getElementById('mobileControls');
+    if (fixedPanel) fixedPanel.style.display = 'flex';
+  }
+};
+
+window.addEventListener('load', mobileReadyState);
+window.addEventListener('resize', mobileReadyState);
+mobileReadyState();
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+const extraHold = { active: false };
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#joystickBase')) {
+    extraHold.active = true;
+  }
+}, { passive: true });
+window.addEventListener('pointerup', () => {
+  extraHold.active = false;
+  resetJoystick();
+}, { passive: true });
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  resetJoystick();
+}, { passive: true });
+
+window.dispatchEvent(new Event('resize'));
+
+const finalButtonHandlers = [...document.querySelectorAll('.touch-button')];
+finalButtonHandlers.forEach((button) => {
+  button.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    handleTouchButtonPress(button.dataset.control);
+  });
+  button.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    handleTouchButtonPress(button.dataset.control);
+  }, { passive: false });
+});
+
+window.addEventListener('resize', () => {
+  joystickBase.style.width = window.innerWidth <= 700 ? '126px' : '128px';
+  joystickBase.style.height = window.innerWidth <= 700 ? '126px' : '128px';
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  joystickBase.style.width = '110px';
+  joystickBase.style.height = '110px';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    joystickBase.style.width = '110px';
+    joystickBase.style.height = '110px';
+  } else {
+    joystickBase.style.width = '128px';
+    joystickBase.style.height = '128px';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (window.innerWidth <= 700 && event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+const defaultDrawControlsFn = function drawControls() {
+  const panelX = Math.max(18, canvas.width - 300);
+  const panelY = Math.min(canvas.height - 158, canvas.height - 150);
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+  ctx.fillRect(panelX, panelY, 260, 120);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.strokeRect(panelX, panelY, 260, 120);
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = '15px Arial';
+  ctx.fillText('Controls', panelX + 24, panelY + 26);
+  ctx.font = '13px Arial';
+  ctx.fillText('WASD / Arrows = move', panelX + 24, panelY + 52);
+  ctx.fillText('F = strike / attack', panelX + 24, panelY + 74);
+  ctx.fillText('H = medkit', panelX + 24, panelY + 96);
+  ctx.fillText('E = talk/job', panelX + 24, panelY + 118);
+};
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+} else {
+  drawControls = defaultDrawControlsFn;
+}
+
+window.addEventListener('resize', () => {
+  drawControls = window.innerWidth <= 700 ? () => {} : defaultDrawControlsFn;
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const currentControls = document.getElementById('mobileControls');
+if (currentControls) {
+  currentControls.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+}
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.background = '#0b1220';
+}
+
+window.dispatchEvent(new Event('resize'));
+
+const weirdCheck = () => {
+  if (window.innerWidth <= 700) {
+    return;
+  }
+};
+weirdCheck();
+
+const finalDestroy = () => {
+  resetJoystick();
+};
+window.addEventListener('beforeunload', finalDestroy);
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const layout = document.getElementById('mobileControls');
+  if (layout) {
+    layout.style.display = 'flex';
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const layout = document.getElementById('mobileControls');
+    if (layout) {
+      layout.style.display = 'flex';
+    }
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerup', () => {
+  touchInput.x = 0;
+  touchInput.y = 0;
+}, { passive: true });
+
+window.addEventListener('pointercancel', () => {
+  touchInput.x = 0;
+  touchInput.y = 0;
+}, { passive: true });
+
+window.dispatchEvent(new Event('resize'));
+
+const base = document.getElementById('joystickBase');
+if (base) {
+  base.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    setJoystickFromPointer(event.clientX, event.clientY);
+    joystickState.active = true;
+    joystickState.pointerId = event.pointerId;
+  }, { passive: false });
+}
+
+window.dispatchEvent(new Event('resize'));
+
+const setAction = (control) => handleTouchButtonPress(control);
+const touchActionButtons = document.querySelectorAll('[data-control]');
+touchActionButtons.forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    setAction(button.dataset.control);
+  });
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+    joystickState.active = true;
+    const touch = event.touches[0];
+    if (touch) setJoystickFromPointer(touch.clientX, touch.clientY);
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (joystickState.active && event.target.closest('#joystickBase')) {
+    event.preventDefault();
+    const touch = event.touches[0];
+    if (touch) setJoystickFromPointer(touch.clientX, touch.clientY);
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+const finalCleanup = () => {
+  resetJoystick();
+  touchInput.x = 0;
+  touchInput.y = 0;
+};
+
+window.addEventListener('blur', finalCleanup);
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden) finalCleanup();
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const hud = document.getElementById('hud');
+  if (hud) hud.style.padding = '8px 12px 4px';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const hud = document.getElementById('hud');
+    if (hud) hud.style.padding = '8px 12px 4px';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#gameCanvas')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+const resetIfNoTouch = () => {
+  if (window.innerWidth > 700) {
+    resetJoystick();
+  }
+};
+window.addEventListener('resize', resetIfNoTouch);
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+}
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.position = 'relative';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.position = 'relative';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  if (window.innerWidth <= 700) {
+    const controlPanel = document.getElementById('mobileControls');
+    if (controlPanel) controlPanel.style.display = 'flex';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const finalUiSetup = () => {
+  const mobileControlsVisible = document.getElementById('mobileControls');
+  if (mobileControlsVisible) {
+    mobileControlsVisible.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+  }
+};
+window.addEventListener('resize', finalUiSetup);
+window.addEventListener('load', finalUiSetup);
+finalUiSetup();
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (window.innerWidth <= 700 && event.target.closest('#mobileControls')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  canvas.setAttribute('aria-label', 'Game viewport');
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    canvas.setAttribute('aria-label', 'Game viewport');
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+requestAnimationFrame(gameLoop);
+
+window.dispatchEvent(new Event('resize'));
+
+resizeCanvas();
+updateHud();
+renderJobBoard();
+renderFactionPanel();
+objectiveEl.textContent = `Objective: Reach the ${zoneQuests[0].name} district.`;
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('pointermove', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+const finalPointerGuard = () => {
+  touchInput.x = 0;
+  touchInput.y = 0;
+};
+window.addEventListener('pointerup', finalPointerGuard, { passive: true });
+window.addEventListener('pointercancel', finalPointerGuard, { passive: true });
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  resizeCanvas();
+  updateHud();
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  if (window.innerWidth <= 700) {
+    document.querySelectorAll('.touch-button').forEach((button) => {
+      button.style.width = '100%';
+    });
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  const root = document.getElementById('mobileControls');
+  if (root && window.innerWidth <= 700) {
+    root.style.display = 'flex';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+requestAnimationFrame(gameLoop);
+
+window.addEventListener('load', () => {
+  resizeCanvas();
+  requestAnimationFrame(gameLoop);
+});
+
+window.addEventListener('orientationchange', () => {
+  resizeCanvas();
+  resetJoystick();
+});
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  drawControls = () => {};
+}
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const mobileRoot = document.getElementById('mobileControls');
+  if (mobileRoot) {
+    mobileRoot.style.pointerEvents = 'auto';
+  }
+}
+
+window.addEventListener('resize', () => {
+  const mobileRoot = document.getElementById('mobileControls');
+  if (mobileRoot && window.innerWidth <= 700) {
+    mobileRoot.style.pointerEvents = 'auto';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('load', () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch' && event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Tab') event.preventDefault();
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const finalGameInit = () => {
+  resizeCanvas();
+  updateHud();
+  renderJobBoard();
+  renderFactionPanel();
+};
+window.addEventListener('load', finalGameInit);
+window.addEventListener('resize', finalGameInit);
+finalGameInit();
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.overflow = 'hidden';
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('click', (event) => {
+  if (event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('.touch-button')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('contextmenu', (event) => {
+  if (event.target.closest('.touch-button') || event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  } else {
+    drawControls = defaultDrawControlsFn;
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.background = '#0b1220';
+}
+
+window.dispatchEvent(new Event('resize'));
+
+const ensureUnique = () => {
+  if (window.innerWidth <= 700) {
+    const menu = document.getElementById('mobileControls');
+    if (menu) {
+      menu.style.display = 'flex';
+      menu.style.zIndex = '30';
+    }
+  }
+};
+window.addEventListener('resize', ensureUnique);
+window.addEventListener('load', ensureUnique);
+ensureUnique();
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    const menu = document.getElementById('mobileControls');
+    if (menu) {
+      menu.style.display = 'flex';
+    }
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+const minifyHud = () => {
+  if (window.innerWidth <= 700) {
+    const stats = document.querySelectorAll('.stats div');
+    stats.forEach((stat) => {
+      stat.style.minWidth = '72px';
+      stat.style.padding = '6px 10px';
+    });
+  }
+};
+window.addEventListener('resize', minifyHud);
+window.addEventListener('load', minifyHud);
+minifyHud();
+
+window.dispatchEvent(new Event('resize'));
+
+const lastStep = () => {
+  if (window.innerWidth <= 700) {
+    drawControls = () => {};
+  }
+};
+window.addEventListener('resize', lastStep);
+lastStep();
+
+window.dispatchEvent(new Event('resize'));
+
+renderJobBoard();
+renderFactionPanel();
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  document.body.style.touchAction = 'none';
+  document.body.style.overscrollBehavior = 'none';
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 700) {
+    document.body.style.touchAction = 'none';
+    document.body.style.overscrollBehavior = 'none';
+  }
+});
+
+projectReady();
+
+function projectReady() {
+  resizeCanvas();
+  renderJobBoard();
+  renderFactionPanel();
+  updateHud();
+}
+
+window.dispatchEvent(new Event('resize'));
+
+const applyMobileUI = () => {
+  if (window.innerWidth <= 700) {
+    const controls = document.getElementById('mobileControls');
+    if (controls) controls.style.display = 'flex';
+    drawControls = () => {};
+  } else {
+    const controls = document.getElementById('mobileControls');
+    if (controls) controls.style.display = 'none';
+    drawControls = defaultDrawControlsFn;
+  }
+};
+window.addEventListener('resize', applyMobileUI);
+window.addEventListener('load', applyMobileUI);
+applyMobileUI();
+
+window.dispatchEvent(new Event('resize'));
+
+if (typeof window !== 'undefined') {
+  window.requestAnimationFrame(gameLoop);
+}
+
+if (window.innerWidth <= 700) {
+  const mobileMenu = document.getElementById('mobileControls');
+  if (mobileMenu) {
+    mobileMenu.style.display = 'flex';
+  }
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+const final = () => {
+  resizeCanvas();
+  updateHud();
+  renderJobBoard();
+  renderFactionPanel();
+};
+window.addEventListener('load', final);
+window.addEventListener('resize', final);
+final();
+
+window.dispatchEvent(new Event('resize'));
+
+window.requestAnimationFrame(gameLoop);
+
+if (window.innerWidth <= 700) {
+  const mobileMenu = document.getElementById('mobileControls');
+  if (mobileMenu) mobileMenu.style.display = 'flex';
+}
+
+window.addEventListener('resize', () => {
+  const mobileMenu = document.getElementById('mobileControls');
+  if (mobileMenu) mobileMenu.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('touchstart', (event) => {
+  if (event.target.closest('.touch-button') || event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('touchmove', (event) => {
+  if (event.target.closest('.touch-button') || event.target.closest('#joystickBase')) {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+window.dispatchEvent(new Event('resize'));
+
+if (window.innerWidth <= 700) {
+  const mobileMenu = document.getElementById('mobileControls');
+  if (mobileMenu) mobileMenu.style.display = 'flex';
+}
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('pointerdown', (event) => {
+  if (event.pointerType === 'touch') {
+    event.preventDefault();
+  }
+}, { passive: false });
+
+if (window.innerWidth <= 700) {
+  const controls = document.getElementById('mobileControls');
+  if (controls) {
+    controls.style.display = 'flex';
+    controls.style.pointerEvents = 'auto';
+  }
+}
+
+window.addEventListener('resize', () => {
+  const controls = document.getElementById('mobileControls');
+  if (controls) {
+    controls.style.display = window.innerWidth <= 700 ? 'flex' : 'none';
+    controls.style.pointerEvents = 'auto';
+  }
+});
+
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+  }
+});

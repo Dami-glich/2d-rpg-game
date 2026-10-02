@@ -89,6 +89,22 @@
 
     <canvas id="gameCanvas" width="1280" height="720"></canvas>
 
+    <div id="mobileControls" aria-label="Mobile controls">
+      <div id="joystick" class="joystick" aria-label="Move joystick">
+        <div id="joystickBase" class="joystick-base">
+          <div id="joystickThumb" class="joystick-thumb"></div>
+        </div>
+      </div>
+
+      <div id="actionButtons" class="action-buttons">
+        <button class="touch-button touch-button-attack" type="button" data-control="attack">Attack</button>
+        <button class="touch-button touch-button-interact" type="button" data-control="interact">Interact</button>
+        <button class="touch-button touch-button-medkit" type="button" data-control="medkit">Medkit</button>
+        <button class="touch-button touch-button-job" type="button" data-control="job">Job Board</button>
+        <button class="touch-button touch-button-inventory" type="button" data-control="inventory">Inventory</button>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
