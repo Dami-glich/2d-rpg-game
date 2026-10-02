@@ -22,6 +22,9 @@ const activeMissionNameEl = document.getElementById('activeMissionName');
 const activeMissionDescEl = document.getElementById('activeMissionDesc');
 const activeMissionRewardEl = document.getElementById('activeMissionReward');
 const abandonJobBtn = document.getElementById('abandonJobBtn');
+const factionPanel = document.getElementById('factionPanel');
+const closeFactionButton = document.getElementById('closeFactionPanel');
+const factionListEl = document.getElementById('factionList');
 
 const world = { width: 2200, height: 1600 };
 const keys = {};
@@ -31,6 +34,22 @@ const shopItems = [
   { id: 'armor', label: 'Armor Plate', cost: 40, effect: 'armor' },
   { id: 'energy', label: 'Energy Drink', cost: 15, effect: 'energy' },
 ];
+
+const sharedRankRequirements = [0, 50, 120, 200, 300, 450, 650, 900, 1200, 1600];
+
+const factionDefinitions = {
+  'Black Vipers': { type: 'crime', color: '#ef4444', ranks: ['Prospect', 'Street Runner', 'Enforcer', 'Driver', 'Dealer', 'Specialist', 'Crew Leader', 'Senior Enforcer', 'Underboss', 'Boss'] },
+  'Iron Wolves': { type: 'crime', color: '#f87171', ranks: ['Prospect', 'Street Runner', 'Enforcer', 'Driver', 'Dealer', 'Specialist', 'Crew Leader', 'Senior Enforcer', 'Underboss', 'Boss'] },
+  'Crown Syndicate': { type: 'crime', color: '#f59e0b', ranks: ['Associate', 'Courier', 'Enforcer', 'Driver', 'Specialist', 'Security Officer', 'Crew Leader', 'Captain', 'Underboss', 'Boss'] },
+  'Metro Police Department': { type: 'police', color: '#3b82f6', ranks: ['Police Recruit', 'Police Officer', 'Senior Officer', 'Patrol Officer', 'Traffic Officer', 'Detective', 'Corporal', 'Sergeant', 'Lieutenant', 'Police Captain'] },
+  'City Highway Patrol': { type: 'police', color: '#60a5fa', ranks: ['Cadet', 'Patrol Officer', 'Traffic Officer', 'Highway Officer', 'Senior Patrol Officer', 'Motorcycle Officer', 'Corporal', 'Sergeant', 'Lieutenant', 'Highway Commander'] },
+  'National Defense Force': { type: 'military', color: '#22c55e', ranks: ['Recruit', 'Private', 'Private First Class', 'Specialist', 'Corporal', 'Sergeant', 'Staff Sergeant', 'Lieutenant', 'Captain', 'Major'] },
+  'State Intelligence Service': { type: 'intelligence', color: '#a78bfa', ranks: ['Trainee', 'Intelligence Analyst', 'Field Agent', 'Surveillance Agent', 'Intelligence Officer', 'Senior Agent', 'Special Agent', 'Field Supervisor', 'Intelligence Director', 'SIS Director'] },
+  'Central City Medical Center': { type: 'medical', color: '#34d399', ranks: ['Medical Intern', 'Medical Assistant', 'Nurse', 'Paramedic', 'Senior Nurse', 'Doctor', 'Emergency Doctor', 'Surgeon', 'Medical Director', 'Hospital Director'] },
+  'Riverside General Hospital': { type: 'medical', color: '#2dd4bf', ranks: ['Medical Intern', 'Medical Assistant', 'Nurse', 'Paramedic', 'Senior Nurse', 'Doctor', 'Emergency Doctor', 'Surgeon', 'Medical Director', 'Hospital Director'] },
+  'Urban News Network': { type: 'news', color: '#fbbf24', ranks: ['News Intern', 'Camera Assistant', 'Reporter', 'News Photographer', 'Field Reporter', 'Investigative Journalist', 'Senior Reporter', 'News Producer', 'News Editor', 'Network Director'] },
+  'City Government Administration': { type: 'government', color: '#e2e8f0', ranks: ['Administrative Intern', 'Clerk', 'Administrative Assistant', 'Government Officer', 'Senior Officer', 'Department Officer', 'Department Manager', 'Deputy Director', 'Government Director', 'City Administrator'] },
+};
 
 const player = {
   x: 820,
@@ -47,7 +66,20 @@ const player = {
   activeJob: null,
   jobProgress: {},
   completedJobs: [],
+  activeFaction: null,
+  factionSwitchCooldown: 0,
+  factions: {},
 };
+
+Object.keys(factionDefinitions).forEach((factionName) => {
+  player.factions[factionName] = {
+    rep: 0,
+    rankIndex: 0,
+    rank: factionDefinitions[factionName].ranks[0],
+    active: false,
+    jobsCompleted: 0,
+  };
+});
 
 const questState = {
   current: 0,
@@ -280,6 +312,24 @@ function getAllJobs() {
   return [...beginnerJobs, ...regularJobs];
 }
 
+function getFactionInfo(factionName) {
+  const faction = factionDefinitions[factionName];
+  if (!faction) return null;
+
+  const state = player.factions[factionName];
+  const rankIndex = state.rankIndex;
+  const rankName = faction.ranks[rankIndex] || faction.ranks[faction.ranks.length - 1];
+  const nextThreshold = sharedRankRequirements[rankIndex + 1] ?? null;
+
+  return {
+    faction,
+    state,
+    rankName,
+    rankIndex,
+    nextThreshold,
+  };
+}
+
 function refreshInventoryUI() {
   const items = [
     { label: 'Medkits', value: player.medkits },
@@ -312,6 +362,12 @@ function toggleJobBoard(forceOpen) {
   const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !jobBoardPanel.classList.contains('hidden');
   jobBoardPanel.classList.toggle('hidden', !shouldOpen);
   if (shouldOpen) renderJobBoard();
+}
+
+function toggleFactionPanel(forceOpen) {
+  const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !factionPanel.classList.contains('hidden');
+  factionPanel.classList.toggle('hidden', !shouldOpen);
+  if (shouldOpen) renderFactionPanel();
 }
 
 function buyItem(itemId) {
@@ -380,6 +436,7 @@ function acceptJob(jobId) {
 
 function abandonJob() {
   if (!player.activeJob) return;
+
   const job = getAllJobs().find((j) => j.id === player.activeJob);
   player.activeJob = null;
   if (job) {
@@ -455,6 +512,93 @@ function renderJobBoard() {
           .map((jobName) => `<div class="completed-job-entry"><strong>${jobName}</strong> completed.</div>`)
           .join('')
       : '<div class="no-jobs-message">No completed jobs yet.</div>';
+}
+
+function renderFactionPanel() {
+  const entries = Object.entries(factionDefinitions);
+
+  factionListEl.innerHTML = entries
+    .map(([factionName, faction]) => {
+      const state = player.factions[factionName];
+      const currentInfo = getFactionInfo(factionName);
+      const nextRequirement = currentInfo.nextThreshold ?? 'Max rank';
+      const isActive = player.activeFaction === factionName;
+      const isLocked = !isActive && Date.now() < player.factionSwitchCooldown && player.activeFaction &&
+        (
+          (factionDefinitions[player.activeFaction].type === 'crime' && faction.type === 'police') ||
+          (factionDefinitions[player.activeFaction].type === 'police' && faction.type === 'crime')
+        );
+
+      return `
+        <div class="faction-card ${isActive ? 'active' : ''}">
+          <div class="faction-card-header">
+            <div>
+              <p class="faction-card-name" style="border-left: 6px solid ${faction.color}; padding-left: 10px;">${factionName}</p>
+              <small class="faction-card-type">${faction.type}</small>
+            </div>
+            <span class="faction-card-rank">${state.rank}</span>
+          </div>
+          <div class="faction-scores">
+            <span>Rep: ${state.rep}</span>
+            <span>Next: ${nextRequirement}</span>
+          </div>
+          <div class="faction-progress-bar">
+            <div class="faction-progress-fill" style="width: ${(state.rep / 1600) * 100}%"></div>
+          </div>
+          <button class="faction-select-btn" data-faction-name="${factionName}" ${isLocked ? 'disabled' : ''}>
+            ${isActive ? 'Active Faction' : isLocked ? 'Cooldown Active' : 'Set Active'}
+          </button>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function setActiveFaction(factionName) {
+  if (!factionDefinitions[factionName]) return;
+
+  const activeFactionName = player.activeFaction;
+  const currentTime = Date.now();
+
+  if (activeFactionName && activeFactionName !== factionName) {
+    const currentType = factionDefinitions[activeFactionName].type;
+    const targetType = factionDefinitions[factionName].type;
+    const isDirectRival = (currentType === 'crime' && targetType === 'police') || (currentType === 'police' && targetType === 'crime');
+
+    if (isDirectRival) {
+      if (currentTime < player.factionSwitchCooldown) {
+        messageEl.textContent = 'This faction switch is on cooldown.';
+        return;
+      }
+
+      player.factions[activeFactionName].rep = Math.max(0, player.factions[activeFactionName].rep - 25);
+      player.factions[factionName].rep = Math.max(0, player.factions[factionName].rep - 10);
+      player.factionSwitchCooldown = currentTime + 60000;
+    }
+  }
+
+  Object.keys(player.factions).forEach((name) => {
+    player.factions[name].active = name === factionName;
+  });
+
+  player.activeFaction = factionName;
+  messageEl.textContent = `${factionName} is now your active faction.`;
+  renderFactionPanel();
+}
+
+function updateFactionRankState() {
+  Object.keys(factionDefinitions).forEach((factionName) => {
+    const info = getFactionInfo(factionName);
+    const state = info.state;
+
+    let nextIndex = 0;
+    while (nextIndex < sharedRankRequirements.length - 1 && state.rep >= sharedRankRequirements[nextIndex + 1]) {
+      nextIndex += 1;
+    }
+
+    state.rankIndex = Math.min(nextIndex, factionDefinitions[factionName].ranks.length - 1);
+    state.rank = factionDefinitions[factionName].ranks[state.rankIndex];
+  });
 }
 
 function updateJobProgress() {
@@ -597,13 +741,12 @@ function updateNPCInteraction() {
   });
 
   if (nearestJob && (!nearest || nearestJobDistance < nearestDistance)) {
-    const canAccept = !player.activeJob || player.activeJob === nearestJob.id;
     const actionText = player.activeJob === nearestJob.id ? 'continue' : 'accept';
     messageEl.textContent = `Press E near ${nearestJob.location.building} to ${actionText} job: ${nearestJob.name}.`;
 
     if (keys['e'] && !keys.interactLock) {
       keys.interactLock = true;
-      if (canAccept && player.activeJob !== nearestJob.id) {
+      if (player.activeJob !== nearestJob.id) {
         acceptJob(nearestJob.id);
       }
     }
@@ -674,6 +817,7 @@ function update(dt) {
   updateZoneProgress();
   updateNPCInteraction();
   updateJobProgress();
+  updateFactionRankState();
   updateEnemies(dt);
   updateHud();
 }
@@ -829,6 +973,10 @@ window.addEventListener('keydown', (event) => {
     toggleJobBoard();
   }
 
+  if (key === 'k') {
+    toggleFactionPanel();
+  }
+
   if (key === 'f') {
     performAttack();
   }
@@ -867,8 +1015,15 @@ jobListEl.addEventListener('click', (event) => {
   acceptJob(button.dataset.jobId);
 });
 
+factionListEl.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-faction-name]');
+  if (!button) return;
+  setActiveFaction(button.dataset.factionName);
+});
+
 closeInventoryButton.addEventListener('click', () => toggleInventory(false));
 closeJobBoardButton.addEventListener('click', () => toggleJobBoard(false));
+closeFactionButton.addEventListener('click', () => toggleFactionPanel(false));
 abandonJobBtn.addEventListener('click', () => abandonJob());
 window.addEventListener('resize', resizeCanvas);
 
@@ -876,6 +1031,7 @@ resizeCanvas();
 updateHud();
 refreshInventoryUI();
 renderJobBoard();
+renderFactionPanel();
 objectiveEl.textContent = `Objective: Reach the ${zoneQuests[0].name} district.`;
 
 let lastTime = 0;
