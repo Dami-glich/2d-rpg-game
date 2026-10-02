@@ -11,6 +11,17 @@ const inventoryPanel = document.getElementById('inventoryPanel');
 const inventoryList = document.getElementById('inventoryList');
 const shopList = document.getElementById('shopList');
 const closeInventoryButton = document.getElementById('closeInventory');
+const jobBoardPanel = document.getElementById('jobBoardPanel');
+const closeJobBoardButton = document.getElementById('closeJobBoard');
+const jobListEl = document.getElementById('jobList');
+const completedJobsListEl = document.getElementById('completedJobsList');
+const activeMissionDisplayEl = document.getElementById('activeMissionDisplay');
+const noActiveMissionEl = document.getElementById('noActiveMission');
+const activeMissionDetailsEl = document.getElementById('activeMissionDetails');
+const activeMissionNameEl = document.getElementById('activeMissionName');
+const activeMissionDescEl = document.getElementById('activeMissionDesc');
+const activeMissionRewardEl = document.getElementById('activeMissionReward');
+const abandonJobBtn = document.getElementById('abandonJobBtn');
 
 const world = { width: 2200, height: 1600 };
 const keys = {};
@@ -35,6 +46,7 @@ const player = {
   attackCooldown: 0,
   activeJob: null,
   jobProgress: {},
+  completedJobs: [],
 };
 
 const questState = {
@@ -50,7 +62,6 @@ const zoneQuests = [
   { name: 'Admin Zone', x: 300, y: 930, w: 500, h: 420, reward: 120, rep: 12 },
 ];
 
-// BEGINNER JOBS
 const beginnerJobs = [
   {
     id: 'delivery_boy',
@@ -61,6 +72,7 @@ const beginnerJobs = [
     payment: 30,
     rep: 2,
     requirements: 'Requires 0 rep',
+    locked: false,
   },
   {
     id: 'shop_clerk',
@@ -71,6 +83,7 @@ const beginnerJobs = [
     payment: 25,
     rep: 1,
     requirements: 'Requires 0 rep',
+    locked: false,
   },
   {
     id: 'parking_attendant',
@@ -81,6 +94,7 @@ const beginnerJobs = [
     payment: 20,
     rep: 1,
     requirements: 'Requires 0 rep',
+    locked: false,
   },
   {
     id: 'mail_carrier',
@@ -91,6 +105,7 @@ const beginnerJobs = [
     payment: 28,
     rep: 2,
     requirements: 'Requires 0 rep',
+    locked: false,
   },
   {
     id: 'janitor',
@@ -101,10 +116,10 @@ const beginnerJobs = [
     payment: 22,
     rep: 1,
     requirements: 'Requires 0 rep',
+    locked: false,
   },
 ];
 
-// REGULAR JOBS (Requires 5+ rep)
 const regularJobs = [
   {
     id: 'security_guard',
@@ -115,6 +130,7 @@ const regularJobs = [
     payment: 75,
     rep: 8,
     requirements: 'Requires 5+ rep',
+    locked: true,
   },
   {
     id: 'courier',
@@ -125,6 +141,7 @@ const regularJobs = [
     payment: 65,
     rep: 6,
     requirements: 'Requires 5+ rep',
+    locked: true,
   },
   {
     id: 'enforcer',
@@ -135,6 +152,7 @@ const regularJobs = [
     payment: 85,
     rep: 10,
     requirements: 'Requires 5+ rep',
+    locked: true,
   },
   {
     id: 'bodyguard',
@@ -145,6 +163,7 @@ const regularJobs = [
     payment: 70,
     rep: 7,
     requirements: 'Requires 5+ rep',
+    locked: true,
   },
   {
     id: 'debt_collector',
@@ -155,6 +174,7 @@ const regularJobs = [
     payment: 80,
     rep: 9,
     requirements: 'Requires 5+ rep',
+    locked: true,
   },
 ];
 
@@ -256,6 +276,10 @@ function hasCollision(x, y) {
   return collidesWithBuilding(x, y) || collidesWithCars(x, y);
 }
 
+function getAllJobs() {
+  return [...beginnerJobs, ...regularJobs];
+}
+
 function refreshInventoryUI() {
   const items = [
     { label: 'Medkits', value: player.medkits },
@@ -282,6 +306,12 @@ function toggleInventory(forceOpen) {
   const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !inventoryPanel.classList.contains('hidden');
   inventoryPanel.classList.toggle('hidden', !shouldOpen);
   if (shouldOpen) refreshInventoryUI();
+}
+
+function toggleJobBoard(forceOpen) {
+  const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !jobBoardPanel.classList.contains('hidden');
+  jobBoardPanel.classList.toggle('hidden', !shouldOpen);
+  if (shouldOpen) renderJobBoard();
 }
 
 function buyItem(itemId) {
@@ -331,10 +361,8 @@ function useMedkit() {
   updateHud();
 }
 
-// JOB SYSTEM FUNCTIONS
 function acceptJob(jobId) {
-  const allJobs = [...beginnerJobs, ...regularJobs];
-  const job = allJobs.find((j) => j.id === jobId);
+  const job = getAllJobs().find((j) => j.id === jobId);
   if (!job) return;
 
   const requiredRep = job.requirements.includes('5+') ? 5 : 0;
@@ -347,27 +375,92 @@ function acceptJob(jobId) {
   player.jobProgress[jobId] = { started: true, completed: false };
   messageEl.textContent = `Job accepted: ${job.name}. ${job.mission}`;
   objectiveEl.textContent = `Job: ${job.name} - ${job.mission}`;
+  renderJobBoard();
+}
+
+function abandonJob() {
+  if (!player.activeJob) return;
+  const job = getAllJobs().find((j) => j.id === player.activeJob);
+  player.activeJob = null;
+  if (job) {
+    player.jobProgress[job.id] = { started: false, completed: false };
+    messageEl.textContent = `You abandoned the ${job.name} job.`;
+  }
+  objectiveEl.textContent = 'Objective: Accept a new job or explore the city.';
+  renderJobBoard();
 }
 
 function completeJob(jobId) {
-  const allJobs = [...beginnerJobs, ...regularJobs];
-  const job = allJobs.find((j) => j.id === jobId);
+  const job = getAllJobs().find((j) => j.id === jobId);
   if (!job || !player.jobProgress[jobId]) return;
 
   player.cash += job.payment;
   player.rep += job.rep;
   player.jobProgress[jobId].completed = true;
+  if (!player.completedJobs.includes(job.name)) {
+    player.completedJobs.push(job.name);
+  }
   player.activeJob = null;
 
   messageEl.textContent = `Job completed: ${job.name}! You earned $${job.payment} and ${job.rep} rep.`;
   objectiveEl.textContent = 'Objective: Accept a new job or explore the city.';
+  renderJobBoard();
+}
+
+function renderJobBoard() {
+  const allJobs = getAllJobs();
+  const activeJob = player.activeJob ? allJobs.find((job) => job.id === player.activeJob) : null;
+
+  noActiveMissionEl.classList.toggle('hidden', !!activeJob);
+  activeMissionDetailsEl.classList.toggle('hidden', !activeJob);
+
+  if (activeJob) {
+    activeMissionNameEl.textContent = activeJob.name;
+    activeMissionDescEl.textContent = `${activeJob.mission} • ${activeJob.location.building}`;
+    activeMissionRewardEl.textContent = `Reward: $${activeJob.payment} + ${activeJob.rep} rep`;
+  }
+
+  jobListEl.innerHTML = allJobs
+    .map((job) => {
+      const isActive = player.activeJob === job.id;
+      const isUnlocked = player.rep >= (job.requirements.includes('5+') ? 5 : 0);
+      const isCompleted = player.completedJobs.includes(job.name);
+
+      return `
+        <div class="job-card ${isActive ? 'active' : ''} ${!isUnlocked ? 'job-card-locked' : ''}">
+          <div class="job-card-header">
+            <p class="job-card-title">${job.name}</p>
+            <span class="job-card-rep">+${job.rep} rep</span>
+          </div>
+          <p class="job-card-location">@ ${job.location.building}</p>
+          <p class="job-card-mission">${job.mission}</p>
+          <p class="job-card-reward">Payment: $${job.payment}</p>
+          <p class="job-card-requirement">${job.requirements}</p>
+          <button
+            type="button"
+            class="accept-btn"
+            data-job-id="${job.id}"
+            ${!isUnlocked || isActive || isCompleted ? 'disabled' : ''}
+          >
+            ${isCompleted ? 'Completed' : isActive ? 'Active' : 'Accept Job'}
+          </button>
+        </div>
+      `;
+    })
+    .join('');
+
+  completedJobsListEl.innerHTML =
+    player.completedJobs.length > 0
+      ? player.completedJobs
+          .map((jobName) => `<div class="completed-job-entry"><strong>${jobName}</strong> completed.</div>`)
+          .join('')
+      : '<div class="no-jobs-message">No completed jobs yet.</div>';
 }
 
 function updateJobProgress() {
   if (!player.activeJob) return;
 
-  const allJobs = [...beginnerJobs, ...regularJobs];
-  const job = allJobs.find((j) => j.id === player.activeJob);
+  const job = getAllJobs().find((j) => j.id === player.activeJob);
   if (!job) return;
 
   const inZone =
@@ -376,7 +469,7 @@ function updateJobProgress() {
     player.y > job.targetZone.y &&
     player.y < job.targetZone.y + job.targetZone.h;
 
-  if (inZone && !player.jobProgress[player.activeJob].completed) {
+  if (inZone && !player.jobProgress[player.activeJob]?.completed) {
     completeJob(player.activeJob);
   }
 }
@@ -491,8 +584,7 @@ function updateNPCInteraction() {
     }
   });
 
-  // Check job locations
-  const allJobs = [...beginnerJobs, ...regularJobs];
+  const allJobs = getAllJobs();
   let nearestJob = null;
   let nearestJobDistance = Infinity;
 
@@ -505,11 +597,13 @@ function updateNPCInteraction() {
   });
 
   if (nearestJob && (!nearest || nearestJobDistance < nearestDistance)) {
-    messageEl.textContent = `Press E near ${nearestJob.location.building} to ${player.activeJob === nearestJob.id ? 'continue' : 'accept'} job: ${nearestJob.name}.`;
+    const canAccept = !player.activeJob || player.activeJob === nearestJob.id;
+    const actionText = player.activeJob === nearestJob.id ? 'continue' : 'accept';
+    messageEl.textContent = `Press E near ${nearestJob.location.building} to ${actionText} job: ${nearestJob.name}.`;
 
     if (keys['e'] && !keys.interactLock) {
       keys.interactLock = true;
-      if (player.activeJob !== nearestJob.id) {
+      if (canAccept && player.activeJob !== nearestJob.id) {
         acceptJob(nearestJob.id);
       }
     }
@@ -626,8 +720,7 @@ function drawBackground(cameraX, cameraY) {
     ctx.fillText(building.name, building.x + 10, building.y + 22);
   });
 
-  // Draw job location markers
-  const allJobs = [...beginnerJobs, ...regularJobs];
+  const allJobs = getAllJobs();
   allJobs.forEach((job) => {
     ctx.fillStyle = player.activeJob === job.id ? '#00ff00' : '#ffeb3b';
     ctx.beginPath();
@@ -732,6 +825,10 @@ window.addEventListener('keydown', (event) => {
     toggleInventory();
   }
 
+  if (key === 'j') {
+    toggleJobBoard();
+  }
+
   if (key === 'f') {
     performAttack();
   }
@@ -764,12 +861,21 @@ shopList.addEventListener('click', (event) => {
   buyItem(button.dataset.buy);
 });
 
+jobListEl.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-job-id]');
+  if (!button) return;
+  acceptJob(button.dataset.jobId);
+});
+
 closeInventoryButton.addEventListener('click', () => toggleInventory(false));
+closeJobBoardButton.addEventListener('click', () => toggleJobBoard(false));
+abandonJobBtn.addEventListener('click', () => abandonJob());
 window.addEventListener('resize', resizeCanvas);
 
 resizeCanvas();
 updateHud();
 refreshInventoryUI();
+renderJobBoard();
 objectiveEl.textContent = `Objective: Reach the ${zoneQuests[0].name} district.`;
 
 let lastTime = 0;
